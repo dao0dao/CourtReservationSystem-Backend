@@ -1,0 +1,11 @@
+{
+    "env": {
+        "PORT": 3000,
+        "DevMode": true,
+        "MYSQL_DATABASE": "mojżeszek",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "00Sakur@->--",
+        "MYSQL_HOST": "localhost",
+        "MYSQL_DIALECT": "mysql"
+    }
+}
