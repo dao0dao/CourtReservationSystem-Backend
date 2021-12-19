@@ -2,13 +2,18 @@
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-
+const { join } = require('path');
 // Pliki
 import sequelize from './utils/database';
+import { PublicFiles } from './utils/appDir';
+//Rout
+import rootRout from './routing/routs/root';
 
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+
 
 if (process.env.DevMode) {
     app.use(cors());
@@ -17,6 +22,9 @@ if (process.env.DevMode) {
 app.use(express.urlencoded({ extends: true }));
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.static(PublicFiles , { maxAge: '1y' }));
+
+app.use(rootRout);
 
 const connectToBase = () => {
     sequelize.sync({ alert: true })
