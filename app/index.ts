@@ -17,7 +17,11 @@ const port = process.env.PORT || 3000;
 
 
 if (process.env.DevMode) {
-    app.use(cors());
+    app.use(cors({
+        origin: [
+            "http://localhost:4200"
+        ], credentials: true
+    }));
 }
 
 app.use(express.urlencoded({ extends: true }));
