@@ -7,12 +7,13 @@ import Auth from '../../controller/auth_controller';
 const router = Router();
 
 
+
 router.post('/login', [
     body('nick').escape().isAlpha(),
     body('password').escape().isAlphanumeric()
 ], (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).login());
 
-
+router.get('/isLogin', (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).isLogin());
 
 
 export default router;

@@ -20,12 +20,13 @@ if (process.env.DevMode) {
     app.use(cors({
         origin: [
             "http://localhost:4200"
-        ], credentials: true
+        ],
+        credentials: true
     }));
 }
 
 app.use(express.urlencoded({ extends: true }));
-app.use(cookieParser());
+app.use(cookieParser(['secret', 'thisIsMySecret', 'secretService']));
 app.use(express.json());
 app.use(express.static(PublicFiles, { maxAge: '1y' }));
 
