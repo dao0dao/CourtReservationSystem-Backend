@@ -61,7 +61,6 @@ export default class Authorization {
 
     async isLogin() {
         const { sid_ } = this.req.cookies;
-        console.log(sid_);
         if (!sid_) {
             return this.endSession();
         }
