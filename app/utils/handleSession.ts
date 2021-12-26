@@ -39,3 +39,19 @@ export const checkSessionFile = async (key: string): Promise<boolean> => {
     }
     return true;
 };
+
+export const extendSession = async (key: string): Promise<boolean | string> => {
+    const sessionPath = join(appDir, 'session', 'sid_' + key + '.json');
+    let isExist = await access(sessionPath).catch((err) => { if (err) { return false; } });
+    if (isExist === false) {
+        return false;
+    }
+    const file = await readFile(sessionPath, 'utf8').then((res) => { return JSON.parse(res); });
+    file.expires = expiresDate;
+    let isWritten = await writeFile(sessionPath, JSON.stringify(file), 'utf8').catch((err) => { if (err) { console.log(err); return false; } });
+    if (isWritten === undefined) {
+        return file.userId;
+    } else {
+        return false;
+    }
+};

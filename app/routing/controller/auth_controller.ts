@@ -4,7 +4,7 @@ const { validationResult } = require('express-validator');
 import Coach from '../../models/admin';
 import { comparePasswords } from '../../utils/bcrypt';
 import { createSessionCookie } from '../../utils/handleCookies';
-import { checkSessionFile, createSessionFile } from '../../utils/handleSession';
+import { checkSessionFile, createSessionFile, extendSession } from '../../utils/handleSession';
 const uniqid = require('uniqid');
 
 
@@ -34,6 +34,7 @@ export default class Authorization {
 
     async login() {
         const { nick, password } = this.req.body;
+        const { sid_ } = this.req.cookies;
         if (!this.errors.isEmpty()) {
             return this.unauthorized();
         }
@@ -48,6 +49,13 @@ export default class Authorization {
         const samePass = await comparePasswords(password, user.password);
         if (!samePass) {
             return this.unauthorized();
+        }
+        if (sid_) {
+            const userId = await extendSession(sid_);
+            if (userId === user.id) {
+                createSessionCookie(sid_, this.res);
+                return this.res.json({ login: true });
+            }
         }
         const id = uniqid();
         const isCreate = createSessionFile(id, user.id);

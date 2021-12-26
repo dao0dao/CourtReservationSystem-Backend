@@ -36,6 +36,10 @@ const Coach = sequelize.define('coaches', {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: false
     },
+    canDeleteYesterdaySchedule: {
+        type: Sequelize.DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     canTakeFees: {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: false
