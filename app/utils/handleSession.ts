@@ -39,7 +39,7 @@ export const checkSessionFile = async (key: string): Promise<{ [key: string]: bo
     if (new Date(file.expires).getTime() < new Date().getTime() || !file.expires) {
         return { isLogin: false };
     }
-    return { isLogin: true, isAdmin: file.isAdmin };
+    return { isLogin: true, isAdmin: file.isAdmin, user: file.name };
 };
 
 export const extendSession = async (key: string): Promise<boolean | string> => {

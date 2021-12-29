@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 
 import Coach from '../../models/admin';
 import { comparePasswords } from '../../utils/bcrypt';
+import { unauthorized, endSession, savedFailed } from '../../utils/errorRes';
 import { createSessionCookie, removeSessionCookie } from '../../utils/handleCookies';
 import { checkSessionFile, createSessionFile, extendSession, removeSession } from '../../utils/handleSession';
 const uniqid = require('uniqid');
@@ -20,23 +21,11 @@ export default class Authorization {
         this.errors = validationResult(this.req);
     }
 
-    private unauthorized() {
-        this.res.status(401).json({ auth: 'fail' });
-    }
-
-    private endSession() {
-        this.res.status(401).json({ session: 'fail' });
-    }
-
-    private savedFailed() {
-        this.res.status(500).json({ database: 'fail' });
-    }
-
     async login() {
         const { nick, password } = this.req.body;
         const { sid_ } = this.req.cookies;
         if (!this.errors.isEmpty()) {
-            return this.unauthorized();
+            return unauthorized(this.res);
         }
         const user = await Coach.findOne({
             where: {
@@ -44,11 +33,11 @@ export default class Authorization {
             }
         });
         if (!user) {
-            return this.unauthorized();
+            return unauthorized(this.res);
         }
         const samePass = await comparePasswords(password, user.password);
         if (!samePass) {
-            return this.unauthorized();
+            return unauthorized(this.res);
         }
         if (sid_) {
             const userId = await extendSession(sid_);
@@ -60,7 +49,7 @@ export default class Authorization {
         const id = uniqid();
         const isCreate = createSessionFile(id, user.id, user.isAdmin, user.name);
         if (!isCreate) {
-            return this.savedFailed();
+            return savedFailed(this.res);
         }
         createSessionCookie(id, this.res);
         return this.res.json({ isLogin: true, isAdmin: user.isAdmin, user: user.name });
@@ -70,13 +59,13 @@ export default class Authorization {
     async isLogin() {
         const { sid_ } = this.req.cookies;
         if (!sid_) {
-            return this.endSession();
+            return endSession(this.res);
         }
         const result = await checkSessionFile(sid_);
         if (!result.isLogin) {
-            return this.endSession();
+            return endSession(this.res);
         }
-        return this.res.json({ isLogin: result.isLogin, isAdmin: result.isAdmin, user: result.name });
+        return this.res.json({ isLogin: result.isLogin, isAdmin: result.isAdmin, user: result.user });
 
     }
 
