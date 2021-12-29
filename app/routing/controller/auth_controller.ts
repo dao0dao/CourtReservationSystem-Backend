@@ -3,8 +3,8 @@ const { validationResult } = require('express-validator');
 
 import Coach from '../../models/admin';
 import { comparePasswords } from '../../utils/bcrypt';
-import { createSessionCookie } from '../../utils/handleCookies';
-import { checkSessionFile, createSessionFile, extendSession } from '../../utils/handleSession';
+import { createSessionCookie, removeSessionCookie } from '../../utils/handleCookies';
+import { checkSessionFile, createSessionFile, extendSession, removeSession } from '../../utils/handleSession';
 const uniqid = require('uniqid');
 
 
@@ -54,16 +54,16 @@ export default class Authorization {
             const userId = await extendSession(sid_);
             if (userId === user.id) {
                 createSessionCookie(sid_, this.res);
-                return this.res.json({ login: true });
+                return this.res.json({ isLogin: true, isAdmin: user.isAdmin });
             }
         }
         const id = uniqid();
-        const isCreate = createSessionFile(id, user.id);
+        const isCreate = createSessionFile(id, user.id, user.isAdmin);
         if (!isCreate) {
             return this.savedFailed();
         }
         createSessionCookie(id, this.res);
-        return this.res.json({ login: true });
+        return this.res.json({ isLogin: true, isAdmin: user.isAdmin });
 
     }
 
@@ -72,12 +72,22 @@ export default class Authorization {
         if (!sid_) {
             return this.endSession();
         }
-        const isLogin = await checkSessionFile(sid_);
-        if (!isLogin) {
+        const result = await checkSessionFile(sid_);
+        if (!result.isLogin) {
             return this.endSession();
         }
-        return this.res.json({ login: true });
+        return this.res.json({ isLogin: result.isLogin, isAdmin: result.isAdmin });
 
+    }
+
+    async logout() {
+        const { sid_ } = this.req.cookies;
+        if (!sid_) {
+            return this.res.status(200).json({ status: 'ok' });
+        }
+        await removeSession(sid_);
+        removeSessionCookie(this.res);
+        return this.res.status(200).json({ status: 'ok' });
     }
 
 }

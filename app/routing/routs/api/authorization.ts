@@ -15,5 +15,6 @@ router.post('/login', [
 
 router.get('/isLogin', (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).isLogin());
 
+router.get('/logout', (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).logout());
 
 export default router;

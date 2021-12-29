@@ -1,9 +1,9 @@
 import appDir from "./appDir";
 import { join } from 'path';
-import { access, writeFile, mkdir, readFile } from 'fs/promises';
+import { access, writeFile, mkdir, readFile, unlink } from 'fs/promises';
 import { expiresDate } from "./expiresDate";
 
-export const createSessionFile = async (id: string, userId: string) => {
+export const createSessionFile = async (id: string, userId: string, isAdmin: boolean) => {
     const sesDirPath = join(appDir, 'session');
     let isFolder = await access(sesDirPath).catch((err) => { if (err) { return false; } });
     if (isFolder === false) {
@@ -15,6 +15,7 @@ export const createSessionFile = async (id: string, userId: string) => {
     if (!isExist) {
         let session = {
             userId,
+            isAdmin,
             expires: expiresDate
         };
         let isWritten = await writeFile(filePath, JSON.stringify(session), 'utf8').then(() => { return true; }).catch((err) => { if (err) { console.log(err); return false; } });
@@ -27,17 +28,17 @@ export const createSessionFile = async (id: string, userId: string) => {
     return true;
 };
 
-export const checkSessionFile = async (key: string): Promise<boolean> => {
+export const checkSessionFile = async (key: string): Promise<{ [key: string]: boolean; }> => {
     const sessionPath = join(appDir, 'session', 'sid_' + key + '.json');
     let isExist = await access(sessionPath).catch((err) => { if (err) { return false; } });
     if (isExist === false) {
-        return false;
+        return { isLogin: false };
     }
     const file = await readFile(sessionPath, 'utf8').then((res) => { return JSON.parse(res); });
     if (new Date(file.expires).getTime() < new Date().getTime() || !file.expires) {
-        return false;
+        return { isLogin: false };
     }
-    return true;
+    return { isLogin: true, isAdmin: file.isAdmin };
 };
 
 export const extendSession = async (key: string): Promise<boolean | string> => {
@@ -54,4 +55,14 @@ export const extendSession = async (key: string): Promise<boolean | string> => {
     } else {
         return false;
     }
+};
+
+export const removeSession = async (key: string): Promise<boolean> => {
+    const sessionPath = join(appDir, 'session', 'sid_' + key + '.json');
+    let isExist = await access(sessionPath).catch((err) => { if (err) { return false; } });
+    if (isExist === false) {
+        return true;
+    }
+    await unlink(sessionPath).catch((err) => { if (err) { console.log(err); return true; } });
+    return true;
 };

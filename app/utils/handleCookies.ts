@@ -9,7 +9,14 @@ export const createSessionCookie = (id: string, res: Response) => {
         httpOnly: true,
         expires,
         maxAge: 3600000,
-        secure: false,
+        secure: true,
         path: '/'
+    });
+};
+
+export const removeSessionCookie = (res: Response) => {
+    return res.clearCookie('sid_', {
+        httpOnly: true,
+        secure: true
     });
 };
