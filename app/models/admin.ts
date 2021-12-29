@@ -8,6 +8,11 @@ const Coach = sequelize.define('coaches', {
         primaryKey: true,
         allowNull: false
     },
+    name: {
+        type: Sequelize.DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Użytkownik'
+    },
     login: {
         type: Sequelize.DataTypes.STRING,
         allowNull: false

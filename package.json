@@ -11,6 +11,7 @@
   "author": "Demid Greshnikov",
   "license": "GPL-2.0-only",
   "dependencies": {
+    "@types/sequelize": "^4.28.11",
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

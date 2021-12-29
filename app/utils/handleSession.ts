@@ -3,7 +3,7 @@ import { join } from 'path';
 import { access, writeFile, mkdir, readFile, unlink } from 'fs/promises';
 import { expiresDate } from "./expiresDate";
 
-export const createSessionFile = async (id: string, userId: string, isAdmin: boolean) => {
+export const createSessionFile = async (id: string, userId: string, isAdmin: boolean, name: string) => {
     const sesDirPath = join(appDir, 'session');
     let isFolder = await access(sesDirPath).catch((err) => { if (err) { return false; } });
     if (isFolder === false) {
@@ -16,6 +16,7 @@ export const createSessionFile = async (id: string, userId: string, isAdmin: boo
         let session = {
             userId,
             isAdmin,
+            name,
             expires: expiresDate
         };
         let isWritten = await writeFile(filePath, JSON.stringify(session), 'utf8').then(() => { return true; }).catch((err) => { if (err) { console.log(err); return false; } });

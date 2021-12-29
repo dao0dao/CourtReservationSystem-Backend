@@ -54,16 +54,16 @@ export default class Authorization {
             const userId = await extendSession(sid_);
             if (userId === user.id) {
                 createSessionCookie(sid_, this.res);
-                return this.res.json({ isLogin: true, isAdmin: user.isAdmin });
+                return this.res.json({ isLogin: true, isAdmin: user.isAdmin, user: user.name });
             }
         }
         const id = uniqid();
-        const isCreate = createSessionFile(id, user.id, user.isAdmin);
+        const isCreate = createSessionFile(id, user.id, user.isAdmin, user.name);
         if (!isCreate) {
             return this.savedFailed();
         }
         createSessionCookie(id, this.res);
-        return this.res.json({ isLogin: true, isAdmin: user.isAdmin });
+        return this.res.json({ isLogin: true, isAdmin: user.isAdmin, user: user.name });
 
     }
 
@@ -76,7 +76,7 @@ export default class Authorization {
         if (!result.isLogin) {
             return this.endSession();
         }
-        return this.res.json({ isLogin: result.isLogin, isAdmin: result.isAdmin });
+        return this.res.json({ isLogin: result.isLogin, isAdmin: result.isAdmin, user: result.name });
 
     }
 
