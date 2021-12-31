@@ -12,6 +12,7 @@ import { PublicFiles } from './utils/appDir';
 //Rout
 import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
+import user from './routing/routs/api/users';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,6 +34,7 @@ app.use(express.static(PublicFiles));
 
 
 app.use('/api', auth);
+app.use('/api', user);
 app.use(rootRout);
 
 const connectToBase = () => {

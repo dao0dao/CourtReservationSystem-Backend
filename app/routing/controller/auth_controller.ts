@@ -10,10 +10,10 @@ const uniqid = require('uniqid');
 
 
 export default class Authorization {
-    req: Request;
-    res: Response;
-    next: NextFunction;
-    errors: any;
+    private req: Request;
+    private res: Response;
+    private next: NextFunction;
+    private errors: any;
     constructor(req: Request, res: Response, next: NextFunction) {
         this.req = req;
         this.res = res;

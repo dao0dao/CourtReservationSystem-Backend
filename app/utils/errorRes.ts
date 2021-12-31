@@ -15,3 +15,7 @@ export const notAllowed = (res: Response) => {
 export const savedFailed = (res: Response) => {
     res.status(500).json({ database: 'fail' });
 };
+
+export const unExistUser = (res: Response) => {
+    res.status(401).json({ unExistUser: 'true' });
+};
