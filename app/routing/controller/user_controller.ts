@@ -3,6 +3,7 @@ import Request, { ProfileError } from '../../utils/interfaces';
 const { validationResult } = require('express-validator');
 import { badRequest, databaseFailed, notAllowed, unauthorized } from '../../utils/errorRes';
 import Coach from '../../models/admin';
+import { creatPassword } from '../../utils/bcrypt';
 
 
 
@@ -50,16 +51,23 @@ export default class User {
                 name,
                 login
             });
-            if (newPassword) {
+            if (newPassword === confirmNewPassword && newPassword) {
+                const password = await creatPassword(newPassword);
                 user.set({
-                    password: newPassword
+                    password
                 });
+            } else if (newPassword !== confirmNewPassword && newPassword) {
+                return badRequest(this.res, { confirmNewPassword: false });
             }
             await user.save().catch(err => { if (err) { databaseFailed(this.res); } });
             return this.res.json({ name, login });
         } else {
             return notAllowed(this.res);
         }
+    }
+
+    async createUser() {
+        const { name, login, password, confirmPassword } = this.req.body;
     }
 
 }

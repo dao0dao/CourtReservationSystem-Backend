@@ -13,6 +13,7 @@ import { PublicFiles } from './utils/appDir';
 import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
 import user from './routing/routs/api/users';
+import { creatPassword } from './utils/bcrypt';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,7 +40,7 @@ app.use(rootRout);
 
 const connectToBase = () => {
     sequelize.sync({ alert: true })
-        .then(() => { console.log('-----Połączono z bazą danych-----'); })
+        .then(() => { console.log('-----Połączono z bazą danych-----');})
         .catch((err: Error) => {
             if (err) {
                 console.log('-----Nieudane połączenie z bazą danych, ponowna próba za 1 min-----');
