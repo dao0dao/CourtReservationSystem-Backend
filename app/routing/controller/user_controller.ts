@@ -1,7 +1,9 @@
 import { NextFunction, Response } from 'express';
-import Request from '../../utils/interfaces';
+import Request, { ProfileError } from '../../utils/interfaces';
 const { validationResult } = require('express-validator');
-import Coache from '../../models/admin';
+import { badRequest, databaseFailed, notAllowed, unauthorized } from '../../utils/errorRes';
+import Coach from '../../models/admin';
+
 
 
 export default class User {
@@ -19,11 +21,45 @@ export default class User {
 
     getUser() {
         const { name, login } = this.req.user;
-        this.res.json({ nick: login, name });
+        this.res.json({ login: login, name });
     }
 
     getListOfUsers() {
         this.res.json({ status: 'ok' });
+    }
+
+    async updateUser() {
+        const { name, login, newPassword, confirmNewPassword } = this.req.body;
+        const userId = this.req.user.id;
+        const errObj: ProfileError = {};
+        this.errors.errors.map((err: any) => {
+            errObj[err.param] === false ? null : errObj[err.param] = false;
+        });
+        if (!this.errors.isEmpty() && (newPassword || confirmNewPassword)) {
+            return badRequest(this.res, errObj);
+        } else if (errObj['login'] === false || errObj['name'] === false) {
+            const smallErrObj: Object = {
+                login: (errObj['login'] === false ? errObj['login'] : null),
+                name: (errObj['name'] === false ? errObj['name'] : null)
+            };
+            return badRequest(this.res, smallErrObj);
+        }
+        const user = await Coach.findOne({ where: { id: userId } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        if (user) {
+            user.set({
+                name,
+                login
+            });
+            if (newPassword) {
+                user.set({
+                    password: newPassword
+                });
+            }
+            await user.save().catch(err => { if (err) { databaseFailed(this.res); } });
+            return this.res.json({ name, login });
+        } else {
+            return notAllowed(this.res);
+        }
     }
 
 }
