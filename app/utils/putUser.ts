@@ -21,7 +21,8 @@ export const putUser = async (req: Request, res: Response, next: NextFunction) =
     const user = await Coach.findOne({
         where: {
             id: file.userId
-        }
+        },
+        attributes: ['id', 'name', 'login', 'isAdmin']
     }).catch((err: any) => { if (err) { unExistUser(res); } });
     req.user = user;
     next();

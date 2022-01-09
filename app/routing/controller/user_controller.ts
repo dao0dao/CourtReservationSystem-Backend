@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import Request, { ProfileError } from '../../utils/interfaces';
 const { validationResult } = require('express-validator');
-import { badRequest, databaseFailed, notAllowed, unauthorized } from '../../utils/errorRes';
+import { badRequest, databaseFailed, notAllowed } from '../../utils/errorRes';
 import Coach from '../../models/admin';
 import { creatPassword } from '../../utils/bcrypt';
 
@@ -25,21 +25,24 @@ export default class User {
         this.res.json({ login: login, name });
     }
 
-    getListOfUsers() {
-        this.res.json({ status: 'ok' });
+    async getListOfUsers() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
+        const users = await Coach.findAll({ where: { isAdmin: false }, attributes: ['id', 'name', 'login'] }).catch(err => { console.log(err); if (err) { databaseFailed(this.res); } });
+        this.res.json({ users });
     }
 
-    async updateUser() {
-        const { name, login, newPassword, confirmNewPassword } = this.req.body;
-        const userId = this.req.user.id;
+    private async functionUpdateUser(userId: string, name: string, login: string, newPassword: string, confirmNewPassword: string,) {
         const errObj: ProfileError = {};
         this.errors.errors.map((err: any) => {
             errObj[err.param] === false ? null : errObj[err.param] = false;
         });
         if (!this.errors.isEmpty() && (newPassword || confirmNewPassword)) {
             return badRequest(this.res, errObj);
-        } else if (errObj['login'] === false || errObj['name'] === false) {
+        } else if (errObj['login'] === false || errObj['name'] === false || errObj['id'] === false) {
             const smallErrObj: Object = {
+                id: (errObj['id'] === false ? errObj['id'] : null),
                 login: (errObj['login'] === false ? errObj['login'] : null),
                 name: (errObj['name'] === false ? errObj['name'] : null)
             };
@@ -47,9 +50,16 @@ export default class User {
         }
         const user = await Coach.findOne({ where: { id: userId } }).catch(err => { if (err) { databaseFailed(this.res); } });
         if (user) {
+            if (user.login !== login) {
+                const reservedLogin = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(this.res); } });
+                if (reservedLogin) {
+                    return this.res.status(400).json({ reservedLogin: true });
+                } else {
+                    user.set({ login });
+                }
+            }
             user.set({
-                name,
-                login
+                name
             });
             if (newPassword === confirmNewPassword && newPassword) {
                 const password = await creatPassword(newPassword);
@@ -66,8 +76,52 @@ export default class User {
         }
     }
 
+    async updateLoginUser() {
+        const { name, login, newPassword, confirmNewPassword } = this.req.body;
+        const userId = this.req.user.id;
+        this.functionUpdateUser(userId, name, login, newPassword, confirmNewPassword);
+    }
+
+    async updateUser() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
+        const { id, name, login, newPassword, confirmNewPassword } = this.req.body;
+        this.functionUpdateUser(id, name, login, newPassword, confirmNewPassword);
+    }
+
     async createUser() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
         const { name, login, password, confirmPassword } = this.req.body;
+        const user = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        if (user) {
+            return this.res.status(400).json({ canNotCreateUser: true });
+        }
+        if (password != confirmPassword) {
+            return this.res.status(400).json({ passwordDoesNotMatch: true });
+        }
+        const hashPass = await creatPassword(password);
+        await Coach.create({
+            name,
+            login,
+            password: hashPass
+        });
+        return this.res.json({ userCreate: true });
+    }
+
+    async deleteUser() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
+        if (!this.errors.isEmpty()) {
+            return this.res.status(400).json({ id: false });
+        }
+        const id = this.req.params.id;
+        const user = await Coach.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });;
+        await user.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
+        return this.res.json({ deletedUser: true });
     }
 
 }

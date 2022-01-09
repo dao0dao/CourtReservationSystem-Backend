@@ -5,6 +5,7 @@ export default interface UerRequest extends Request {
 }
 
 export interface ProfileError {
+    id?: boolean,
     name?: boolean,
     login?: boolean,
     newPassword?: boolean,
