@@ -13,6 +13,8 @@ import { PublicFiles } from './utils/appDir';
 import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
 import user from './routing/routs/api/users';
+import players from './routing/routs/api/players';
+
 import { creatPassword } from './utils/bcrypt';
 
 const app = express();
@@ -36,11 +38,12 @@ app.use(express.static(PublicFiles));
 
 app.use('/api', auth);
 app.use('/api', user);
+app.use('/api', players);
 app.use(rootRout);
 
 const connectToBase = () => {
     sequelize.sync({ alert: true })
-        .then(() => { console.log('-----Połączono z bazą danych-----');})
+        .then(() => { console.log('-----Połączono z bazą danych-----'); })
         .catch((err: Error) => {
             if (err) {
                 console.log('-----Nieudane połączenie z bazą danych, ponowna próba za 1 min-----');
