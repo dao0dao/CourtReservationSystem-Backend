@@ -29,7 +29,6 @@ export default class User {
     private checkWeek(weeks: Week[]): boolean {
 
         if (!Array.isArray(weeks)) {
-            console.log(1);
             return false;
         }
         if (!weeks.length) {
@@ -39,7 +38,6 @@ export default class User {
             const week = weeks[i];
             const weekKeys = Object.keys(week);
             if (weekKeys.length != 2) {
-                console.log(2);
                 return false;
             }
             for (let i = 0; i < weekKeys.length; i++) {
@@ -47,14 +45,12 @@ export default class User {
                 const key = weekKeys[i];
                 const regEx = /^(days|time){1}$/;
                 if (!regEx.test(key)) {
-                    console.log(3);
                     return false;
                 }
             }
             const dayKeys = Object.keys(week.days);
             let dayLength: number = dayKeys.length;
             if (dayLength > 7) {
-                console.log(4);
                 return false;
             }
             for (let i = 0; i < dayKeys.length; i++) {
@@ -62,12 +58,10 @@ export default class User {
                 const regEx = /[0-6]/;
                 const key = dayKeys[i];
                 if (!regEx.test(key)) {
-                    console.log(5);
                     return false;
                 }
                 //sprawdzam czy wartości propercji to 'true'
                 if (week.days[key] !== true) {
-                    console.log(6);
                     return false;
                 }
             }
@@ -77,12 +71,10 @@ export default class User {
                 const key = timeKeys[i];
                 const regEx = /^(from|to){1}$/;
                 if (!regEx.test(key)) {
-                    console.log(7);
                     return false;
                 }
                 const timeRegEx = /^((\d{1,2}:\d{1,2})|null)$/;
-                if (!timeRegEx.test(week.time[key])) {
-                    console.log(8);
+                if (!timeRegEx.test(week.time[key]) && week.time[key].length) {
                     return false;
                 }
             }
@@ -101,6 +93,7 @@ export default class User {
         }
         const player: AddPlayer = this.req.body;
         const isValidWeek: boolean = this.checkWeek(player.weeks);
+        console.log(isValidWeek);
         this.res.json({ status: 'ok' });
     }
 }

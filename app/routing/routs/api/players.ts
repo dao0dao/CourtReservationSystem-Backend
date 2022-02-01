@@ -21,8 +21,24 @@ router.post('/players/addPlayer', [
     body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
     body('tension').escape().optional({ checkFalsy: true }).isNumeric().isLength({ max: 2 }),
     body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
-    body('weeks'),
-    body('opponents').escape(),
+    body('weeks').custom(
+        (val: Object) => {
+            let str = JSON.stringify(val);
+            str.replace(/\<*\>*\/*/g, '');
+            str = JSON.parse(str);
+            val = str;
+            return true;
+        }
+    ),
+    body('opponents').custom(
+        (val: Object) => {
+            let str = JSON.stringify(val);
+            str.replace(/\<*\>*\/*/g, '');
+            str = JSON.parse(str);
+            val = str;
+            return true;
+        }
+    ),
     body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).addPlayer();
