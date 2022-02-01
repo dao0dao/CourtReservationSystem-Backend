@@ -26,7 +26,10 @@ const Players = sequelize.define('players', {
     account: {
         type: Sequelize.DataTypes.STRING
     },
-    price: {
+    priceSummer: {
+        type: Sequelize.DataTypes.STRING
+    },
+    priceWinter: {
         type: Sequelize.DataTypes.STRING
     },
     court: {
