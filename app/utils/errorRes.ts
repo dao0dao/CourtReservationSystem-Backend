@@ -16,6 +16,10 @@ export const notAllowed = (res: Response) => {
     res.status(403).json({ notAllowed: true });
 };
 
+export const notAcceptable = (res: Response, reason: string) => {
+    res.status(406).json({ reason });
+};
+
 export const savedFailed = (res: Response) => {
     res.status(500).json({ database: 'fail' });
 };

@@ -21,38 +21,49 @@ const Players = sequelize.define('players', {
         allowNull: false,
     },
     email: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     account: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     priceSummer: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     priceWinter: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     court: {
-        type: Sequelize.DataTypes.INTEGER
+        type: Sequelize.DataTypes.INTEGER,
+        allowNull: true,
     },
     strings: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     tension: {
-        type: Sequelize.DataTypes.INTEGER
+        type: Sequelize.DataTypes.INTEGER,
+        allowNull: true,
     },
     balls: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
     weeks: {
-        type: Sequelize.DataTypes.STRING(1234)
+        type: Sequelize.DataTypes.STRING(1234),
+        allowNull: true,
     },
     opponents: {
-        type: Sequelize.DataTypes.STRING(1234)
+        type: Sequelize.DataTypes.STRING(1234),
+        allowNull: true,
     },
     notes: {
-        type: Sequelize.DataTypes.STRING
+        type: Sequelize.DataTypes.STRING,
+        allowNull: true,
     },
 });
-
+// sequelize.createSchema('players', { ifNotExists: true });
 export default Players;

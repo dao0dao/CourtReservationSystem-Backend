@@ -51,6 +51,8 @@ export interface AddPlayer {
     notes?: string;
 };
 
+export type PlayerSql = Omit<AddPlayer, 'opponents'> & { opponents: Omit<Opponent, 'name' | 'surname'>[]; };
+
 export interface AddPlayerError {
     name?: boolean;
     surname?: boolean;

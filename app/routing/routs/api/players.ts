@@ -8,6 +8,8 @@ import Players from '../../controller/players_controller';
 
 const router = new Router();
 
+router.get('/players', putUser, (req: Request, res: Response, next: NextFunction) => { return new Players(req, res, next).getAllPlayers(); });
+
 router.post('/players/addPlayer', [
     cookie('sid_').escape(),
     body('name').escape().isLength({ min: 2, max: 15 }).isAlpha(['pl-PL'], { ignore: ' -' }),
@@ -22,20 +24,20 @@ router.post('/players/addPlayer', [
     body('tension').escape().optional({ checkFalsy: true }).isNumeric().isLength({ max: 2 }),
     body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
     body('weeks').custom(
-        (val: Object) => {
-            let str = JSON.stringify(val);
-            str.replace(/\<*\>*\/*/g, '');
-            str = JSON.parse(str);
-            val = str;
+        (val) => {
+            const regEx = /(\<|\>|\/){1,}/g;
+            if (regEx.test(val)) {
+                throw new Error('Invalid weeks');
+            }
             return true;
         }
     ),
     body('opponents').custom(
-        (val: Object) => {
-            let str = JSON.stringify(val);
-            str.replace(/\<*\>*\/*/g, '');
-            str = JSON.parse(str);
-            val = str;
+        (val) => {
+            const regEx = /(\<|\>|\/){1,}/g;
+            if (regEx.test(val)) {
+                throw new Error('Invalid weeks');
+            }
             return true;
         }
     ),
