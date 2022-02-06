@@ -139,20 +139,34 @@ export default class User {
             }
         }
         await Account.create({ playerId: newPlayer.id, account, priceSummer, priceWinter }).catch(err => { if (err) { return databaseFailed(this.res); } });
-        return this.res.json({ status: 'ok' });
+        return this.res.json({ player: 'created', id: newPlayer.id });
     }
 
     async getAllPlayers() {
         if (!this.req.user) {
             return unauthorized(this.res);
         }
-        const players: any[] = await Players.findAll({
+        const allPlayers: Player[] = [];
+        const players: AddPlayer[] = await Players.findAll({
             attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
             include: [
                 { model: Account, attributes: ['account', 'priceSummer', 'priceWinter'] },
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
-        }).catch(err => { if (err) { console.log(err); return databaseFailed(this.res); } });
-        this.res.json(players);
+        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        players.forEach((pl: AddPlayer) => {
+            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents } = pl;
+            const newPlayer: Player = {
+                id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents: []
+            };
+            opponents.forEach(el => {
+                const op: AddPlayer | undefined = players.find(p => (p.id === el.id));
+                if (op) {
+                    newPlayer.opponents.push({ id: op.id, name: op.name, surname: op.surname });
+                }
+            });
+            allPlayers.push(newPlayer);
+        });
+        this.res.json(allPlayers);
     }
 }
