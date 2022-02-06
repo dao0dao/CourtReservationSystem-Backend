@@ -1,7 +1,7 @@
 const { Sequelize } = require('sequelize');
 import sequelize from "../utils/database";
 
-const Coach = sequelize.define('coaches', {
+const Coaches = sequelize.define('coaches', {
     id: {
         type: Sequelize.DataTypes.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -55,4 +55,4 @@ const Coach = sequelize.define('coaches', {
     },
 });
 
-export default Coach;
+export default Coaches;

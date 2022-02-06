@@ -6,7 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { join } = require('path');
-// Pliki
+// Utility
 import sequelize from './utils/database';
 import { PublicFiles } from './utils/appDir';
 //Rout
@@ -14,6 +14,12 @@ import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
 import user from './routing/routs/api/users';
 import players from './routing/routs/api/players';
+// Modele tabel
+import Coaches from './models/admin';
+import Players from './models/players';
+import Opponents from './models/opponents';
+import Account from './models/account';
+import Payments from './models/payments';
 
 import { creatPassword } from './utils/bcrypt';
 
@@ -53,6 +59,11 @@ const connectToBase = () => {
             }
         });
 };
+
+Coaches.hasMany(Payments, { as: 'coachesId', onDelete: 'NO ACTION' });
+Players.hasOne(Account, { onDelete: 'CASCADE' });
+Players.hasMany(Payments, { onDelete: 'CASCADE' });
+Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
 app.listen(port, () => {
     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);

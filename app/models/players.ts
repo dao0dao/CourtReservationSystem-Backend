@@ -24,23 +24,12 @@ const Players = sequelize.define('players', {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },
-    account: {
-        type: Sequelize.DataTypes.STRING,
-        allowNull: true,
-    },
-    priceSummer: {
-        type: Sequelize.DataTypes.STRING,
-        allowNull: true,
-    },
-    priceWinter: {
-        type: Sequelize.DataTypes.STRING,
-        allowNull: true,
-    },
     court: {
         type: Sequelize.DataTypes.INTEGER,
         allowNull: true,
+        defaultValue: 0,
     },
-    strings: {
+    stringsName: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },
@@ -53,11 +42,7 @@ const Players = sequelize.define('players', {
         allowNull: true,
     },
     weeks: {
-        type: Sequelize.DataTypes.STRING(1234),
-        allowNull: true,
-    },
-    opponents: {
-        type: Sequelize.DataTypes.STRING(1234),
+        type: Sequelize.DataTypes.JSON,
         allowNull: true,
     },
     notes: {
@@ -65,5 +50,5 @@ const Players = sequelize.define('players', {
         allowNull: true,
     },
 });
-// sequelize.createSchema('players', { ifNotExists: true });
+sequelize.createSchema('players', { ifNotExists: true });
 export default Players;

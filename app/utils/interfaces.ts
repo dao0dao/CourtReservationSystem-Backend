@@ -28,30 +28,41 @@ export interface Week {
     };
 }
 
-export interface Opponent {
-    id: string,
-    name: string,
-    surname: string;
+export interface OpponentSql {
+    playerId: string,
+    opponentId: string;
 }
 
+export type Opponent = { id: string, name: string, surname: string; };
+
+export type OpponentAdd = { id: string; };
+
 export interface AddPlayer {
+    id: string;
     weeks: Week[];
-    opponents: Opponent[];
+    opponents: OpponentAdd[];
     name: string,
     surname: string,
     telephone: number,
     email?: string,
     account: number,
-    priceSummer: number,
-    priceWinter: number,
+    priceSummer?: number,
+    priceWinter?: number,
     court?: number,
-    strings?: string,
+    stringsName?: string,
     tension: number,
     balls?: string,
     notes?: string;
 };
 
-export type PlayerSql = Omit<AddPlayer, 'opponents'> & { opponents: Omit<Opponent, 'name' | 'surname'>[]; };
+export type Player = Omit<AddPlayer, 'opponents'> & { opponents: Opponent[]; };
+
+export interface AccountSql {
+    playerId: string,
+    account: number,
+    priceSummer?: number,
+    priceWinter?: number,
+}
 
 export interface AddPlayerError {
     name?: boolean;
