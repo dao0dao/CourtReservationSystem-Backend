@@ -150,7 +150,6 @@ export default class User {
         const players: AddPlayer[] = await Players.findAll({
             attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
             include: [
-                { model: Account, attributes: ['account', 'priceSummer', 'priceWinter'] },
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
         }).catch(err => { if (err) { return databaseFailed(this.res); } });

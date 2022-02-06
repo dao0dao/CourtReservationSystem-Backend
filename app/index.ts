@@ -26,8 +26,6 @@ import { creatPassword } from './utils/bcrypt';
 const app = express();
 const port = process.env.PORT || 3000;
 
-
-
 if (process.env.DevMode) {
     app.use(cors({
         origin: [
