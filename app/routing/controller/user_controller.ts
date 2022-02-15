@@ -119,7 +119,7 @@ export default class User {
             return this.res.status(400).json({ id: false });
         }
         const id = this.req.params.id;
-        const user = await Coach.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });;
+        const user = await Coach.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });
         await user.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
         return this.res.json({ deletedUser: true });
     }

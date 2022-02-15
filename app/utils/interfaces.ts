@@ -38,14 +38,14 @@ export type Opponent = { id: string, name: string, surname: string; };
 export type OpponentAdd = { id: string; };
 
 export interface AddPlayer {
-    id: string;
-    weeks: Week[];
-    opponents: OpponentAdd[];
+    id: string,
+    weeks: Week[],
+    opponents: OpponentAdd[],
     name: string,
     surname: string,
     telephone: number,
     email?: string,
-    account: number,
+    account?: number,
     priceSummer?: number,
     priceWinter?: number,
     court?: number,

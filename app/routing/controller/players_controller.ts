@@ -3,7 +3,7 @@ import Request, { AddPlayer, AddPlayerError, OpponentSql, Player, Week, AccountS
 import Players from '../../models/players';
 import Opponents from '../../models/opponents';
 import Account from '../../models/account';
-import { badRequest, databaseFailed, notAcceptable, unauthorized } from '../../utils/errorRes';
+import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
 const { validationResult } = require('express-validator');
 
 
@@ -121,6 +121,7 @@ export default class User {
                 weeks: !isValidWeek,
                 opponents: !isValidOpponents
             };
+            return badRequest(this.res, error);
         }
         const { name, surname, telephone, email, opponents, weeks, account, priceSummer, priceWinter, court, stringsName, tension, balls, notes } = player;
         const isExist = await Players.findOne({
@@ -167,5 +168,49 @@ export default class User {
             allPlayers.push(newPlayer);
         });
         this.res.json(allPlayers);
+
+    }
+
+    async updatePlayer() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
+        if (!this.errors.isEmpty()) {
+            const errors = this.fixErrors(this.errors);
+            return badRequest(this.res, errors);
+        }
+        const isValidWeek: boolean = this.checkWeek(this.req.body.weeks);
+        const isValidOpponents: boolean = this.checkOpponents(this.req.body.opponents);
+        if (!isValidWeek || !isValidOpponents) {
+            const error: AddPlayerError = {
+                weeks: !isValidWeek,
+                opponents: !isValidOpponents
+            };
+            return badRequest(this.res, error);
+        }
+        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: AddPlayer = this.req.body;;
+        const player = await Players.findOne({ where: { id } }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        if (!player) {
+            return this.res.status(404).json({ nonExistPlayer: true });
+        }
+        player.set({ weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes });
+        player.save()
+            .then(() => {
+                return this.res.json({ updated: true });
+            })
+            .catch(err => { if (err) { return databaseFailed(this.res); } });
+    }
+
+    async deletePlayer() {
+        if (!this.req.user.isAdmin) {
+            return notAllowed(this.res);
+        }
+        if (!this.errors.isEmpty()) {
+            return this.res.status(400).json({ badRequest: true });
+        }
+        const id = this.req.params.id;
+        const player = await Players.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        await player.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
+        return this.res.json({ deletedPlayer: true });
     }
 }
