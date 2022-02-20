@@ -6,9 +6,11 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { join } = require('path');
+import https from 'https';
+import { readFileSync } from 'fs';
 // Utility
 import sequelize from './utils/database';
-import { PublicFiles } from './utils/appDir';
+import appDir, { PublicFiles } from './utils/appDir';
 //Rout
 import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
@@ -26,10 +28,14 @@ import { creatPassword } from './utils/bcrypt';
 const app = express();
 const port = process.env.PORT || 3000;
 
+const privateKey = readFileSync(join(appDir, '..', 'server.key'));
+const certificate = readFileSync(join(appDir, '..', 'server.cert'));
+
 if (process.env.DevMode) {
     app.use(cors({
         origin: [
-            "http://localhost:4200"
+            "http://localhost:4200",
+            "http://localhost:3000",
         ],
         credentials: true
     }));
@@ -63,7 +69,9 @@ Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
-app.listen(port, () => {
+const server = https.createServer({ key: privateKey, cert: certificate }, app);
+
+server.listen(port, () => {
     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
     connectToBase();
 });
