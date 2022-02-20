@@ -41,7 +41,7 @@ router.post('/players/addPlayer', [
             return true;
         }
     ),
-    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -\n' }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).addPlayer();
 });
@@ -77,7 +77,7 @@ router.post('/players/editPlayer', [
             return true;
         }
     ),
-    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -\n' }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).updatePlayer();
 });

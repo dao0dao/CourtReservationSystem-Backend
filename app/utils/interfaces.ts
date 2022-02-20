@@ -29,6 +29,7 @@ export interface Week {
 }
 
 export interface OpponentSql {
+    destroy();
     playerId: string,
     opponentId: string;
 }

@@ -5,6 +5,7 @@ import Opponents from '../../models/opponents';
 import Account from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
 const { validationResult } = require('express-validator');
+import sequelize from 'sequelize';
 
 
 export default class User {
@@ -149,7 +150,7 @@ export default class User {
         }
         const allPlayers: Player[] = [];
         const players: AddPlayer[] = await Players.findAll({
-            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
+            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'priceSummer', 'priceWinter', 'tension', 'balls', 'weeks', 'notes'],
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
@@ -188,12 +189,37 @@ export default class User {
             };
             return badRequest(this.res, error);
         }
-        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: AddPlayer = this.req.body;;
-        const player = await Players.findOne({ where: { id } }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: AddPlayer = this.req.body;
+        const player = await Players.findOne({ where: { id } });
+        const samePlayer = await Players.findOne({
+            where: {
+                id: { [sequelize.Op.not]: id },
+                name,
+                surname
+            }
+        });
+        if (samePlayer) {
+            return this.res.status(400).json({ alreadyExist: true });
+        }
         if (!player) {
             return this.res.status(404).json({ nonExistPlayer: true });
         }
-        player.set({ weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes });
+        const playerOpponents: Array<any> = await Opponents.findAll({
+            where: {
+                playerId: id
+            }
+        });
+        playerOpponents.forEach(op => {
+            if (!opponents.includes({ id: op.opponentId })) {
+                op.destroy();
+            }
+        });
+        opponents.forEach(op => {
+            if (!playerOpponents.includes({ playerId: id, opponentId: op.id, })) {
+                Opponents.create({ playerId: id, opponentId: op.id });
+            }
+        });
+        player.set({ weeks, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes });
         player.save()
             .then(() => {
                 return this.res.json({ updated: true });
@@ -210,6 +236,9 @@ export default class User {
         }
         const id = this.req.params.id;
         const player = await Players.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        if (!player) {
+            return this.res.status(400).json({ deletedPlayer: true });
+        }
         await player.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
         return this.res.json({ deletedPlayer: true });
     }

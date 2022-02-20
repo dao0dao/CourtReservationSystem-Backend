@@ -29,6 +29,16 @@ const Players = sequelize.define('players', {
         allowNull: true,
         defaultValue: 0,
     },
+    priceSummer: {
+        type: Sequelize.DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+    },
+    priceWinter: {
+        type: Sequelize.DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+    },
     stringsName: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
