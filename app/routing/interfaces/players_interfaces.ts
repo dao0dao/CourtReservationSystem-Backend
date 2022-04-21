@@ -1,8 +1,4 @@
-import { Request } from 'express';
 
-export default interface UerRequest extends Request {
-    user: any;
-}
 
 export interface ProfileError {
     id?: boolean,

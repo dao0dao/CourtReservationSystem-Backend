@@ -1,5 +1,6 @@
 import { NextFunction, Response } from 'express';
-import Request, { AddPlayer, AddPlayerError, OpponentSql, Player, Week, AccountSql, OpponentAdd } from '../../utils/interfaces';
+import { AddPlayer, AddPlayerError, OpponentSql, Player, Week, AccountSql, OpponentAdd } from '../interfaces/players_interfaces';
+import Request from '../interfaces/request_interfaces';
 import Players from '../../models/players';
 import Opponents from '../../models/opponents';
 import Account from '../../models/account';

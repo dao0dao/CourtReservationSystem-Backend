@@ -6,8 +6,6 @@ import Auth from '../../controller/auth_controller';
 
 const router = Router();
 
-
-
 router.post('/login', [
     cookie('sid_').escape(),
     body('nick').escape().isAlpha(),

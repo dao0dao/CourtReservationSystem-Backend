@@ -1,5 +1,6 @@
 import { NextFunction, Response } from 'express';
-import Request, { ProfileError } from '../../utils/interfaces';
+import  { ProfileError } from '../interfaces/players_interfaces';
+import Request from '../interfaces/request_interfaces';
 const { validationResult } = require('express-validator');
 import { badRequest, databaseFailed, notAllowed } from '../../utils/errorRes';
 import Coach from '../../models/admin';

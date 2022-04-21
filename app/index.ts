@@ -16,6 +16,7 @@ import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
 import user from './routing/routs/api/users';
 import players from './routing/routs/api/players';
+import reservation from './routing/routs/api/reservation';
 // Modele tabel
 import Coaches from './models/admin';
 import Players from './models/players';
@@ -49,6 +50,7 @@ app.use(express.static(PublicFiles));
 app.use('/api', auth);
 app.use('/api', user);
 app.use('/api', players);
+app.use('/api', reservation);
 app.use(rootRout);
 
 const connectToBase = () => {
@@ -69,9 +71,13 @@ Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
-const server = https.createServer({ key: privateKey, cert: certificate }, app);
+// const server = https.createServer({ key: privateKey, cert: certificate }, app);
 
-server.listen(port, () => {
+// server.listen(port, () => {
+//     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
+//     connectToBase();
+// });
+app.listen(port, () => {
     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
     connectToBase();
 });

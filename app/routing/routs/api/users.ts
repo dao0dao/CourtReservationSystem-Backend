@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { body, param, cookie } = require('express-validator');
 
 import { NextFunction, Response } from 'express';
-import Request from '../../../utils/interfaces';
+import Request from '../../interfaces/request_interfaces';
 import User from '../../controller/user_controller';
 import { putUser } from '../../../utils/putUser';
 

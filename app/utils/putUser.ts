@@ -5,7 +5,7 @@ import appDir from './appDir';
 import { endSession, unauthorized, unExistUser } from './errorRes';
 import Coach from '../models/admin';
 
-import Request from './interfaces';
+import Request from '../routing/interfaces/request_interfaces';
 
 
 export const putUser = async (req: Request, res: Response, next: NextFunction) => {
