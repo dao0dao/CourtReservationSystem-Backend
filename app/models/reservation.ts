@@ -40,12 +40,12 @@ const ReservationModel = sequelize.define('reservation', {
         type: Sequelize.DataTypes.STRING,
         allowNull: false
     },
-    playerOne: {
+    playerOneId: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
         defaultValue: '',
     },
-    playerTwo: {
+    playerTwoId: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
         defaultValue: '',

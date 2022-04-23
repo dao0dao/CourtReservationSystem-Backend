@@ -24,20 +24,15 @@ export interface Week {
     };
 }
 
-export interface OpponentSql {
-    destroy();
-    playerId: string,
-    opponentId: string;
-}
 
 export type Opponent = { id: string, name: string, surname: string; };
 
-export type OpponentAdd = { id: string; };
+export type OpponentSQL = { id: string; };
 
-export interface AddPlayer {
+export interface PlayerSQL {
     id: string,
     weeks: Week[],
-    opponents: OpponentAdd[],
+    opponents: OpponentSQL[],
     name: string,
     surname: string,
     telephone: number,
@@ -52,7 +47,7 @@ export interface AddPlayer {
     notes?: string;
 };
 
-export type Player = Omit<AddPlayer, 'opponents'> & { opponents: Opponent[]; };
+export type Player = Omit<PlayerSQL, 'opponents'> & { opponents: Opponent[]; };
 
 export interface AccountSql {
     playerId: string,
@@ -61,7 +56,7 @@ export interface AccountSql {
     priceWinter?: number,
 }
 
-export interface AddPlayerError {
+export interface PlayerError {
     name?: boolean;
     surname?: boolean;
     telephone?: boolean;

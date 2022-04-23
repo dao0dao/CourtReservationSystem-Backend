@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { AddPlayer, AddPlayerError, OpponentSql, Player, Week, AccountSql, OpponentAdd } from '../interfaces/players_interfaces';
+import { PlayerSQL, PlayerError, Player, Week, OpponentSQL } from '../interfaces/players_interfaces';
 import Request from '../interfaces/request_interfaces';
 import Players from '../../models/players';
 import Opponents from '../../models/opponents';
@@ -21,8 +21,8 @@ export default class User {
         this.errors = validationResult(this.req);
     }
 
-    private fixErrors(errors: { errors: Array<any>; }): AddPlayerError {
-        const error: AddPlayerError = {};
+    private fixErrors(errors: { errors: Array<any>; }): PlayerError {
+        const error: PlayerError = {};
         errors.errors.forEach(el => {
             const er: string = el.param;
             error[er] = true;
@@ -87,7 +87,7 @@ export default class User {
         return true;
     };
 
-    private checkOpponents(opponents: OpponentAdd[]) {
+    private checkOpponents(opponents: OpponentSQL[]) {
         if (opponents.length === 0) {
             return true;
         }
@@ -115,11 +115,11 @@ export default class User {
             const errors = this.fixErrors(this.errors);
             return badRequest(this.res, errors);
         }
-        const player: AddPlayer = this.req.body;
+        const player: PlayerSQL = this.req.body;
         const isValidWeek: boolean = this.checkWeek(player.weeks);
         const isValidOpponents: boolean = this.checkOpponents(player.opponents);
         if (!isValidWeek || !isValidOpponents) {
-            const error: AddPlayerError = {
+            const error: PlayerError = {
                 weeks: !isValidWeek,
                 opponents: !isValidOpponents
             };
@@ -150,19 +150,19 @@ export default class User {
             return unauthorized(this.res);
         }
         const allPlayers: Player[] = [];
-        const players: AddPlayer[] = await Players.findAll({
+        const players: PlayerSQL[] = await Players.findAll({
             attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'priceSummer', 'priceWinter', 'tension', 'balls', 'weeks', 'notes'],
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
-        players.forEach((pl: AddPlayer) => {
+        players.forEach((pl: PlayerSQL) => {
             const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents } = pl;
             const newPlayer: Player = {
                 id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents: []
             };
             opponents.forEach(el => {
-                const op: AddPlayer | undefined = players.find(p => (p.id === el.id));
+                const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));
                 if (op) {
                     newPlayer.opponents.push({ id: op.id, name: op.name, surname: op.surname });
                 }
@@ -184,13 +184,13 @@ export default class User {
         const isValidWeek: boolean = this.checkWeek(this.req.body.weeks);
         const isValidOpponents: boolean = this.checkOpponents(this.req.body.opponents);
         if (!isValidWeek || !isValidOpponents) {
-            const error: AddPlayerError = {
+            const error: PlayerError = {
                 weeks: !isValidWeek,
                 opponents: !isValidOpponents
             };
             return badRequest(this.res, error);
         }
-        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: AddPlayer = this.req.body;
+        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: PlayerSQL = this.req.body;
         const player = await Players.findOne({ where: { id } });
         const samePlayer = await Players.findOne({
             where: {

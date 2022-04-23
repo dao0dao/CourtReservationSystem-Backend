@@ -28,9 +28,11 @@ export interface Reservation {
 
 export type ReservationForm = Pick<Reservation, 'form'>;
 
-export type FormSQL = Omit<Reservation['form'], 'playerOne' | 'playerTwo'> & { playerOne: string; } & { playerTwo: string; };
+export type FormSQL = Omit<Reservation['form'], 'playerOne' | 'playerTwo'> & { playerOneId: string; } & { playerTwoId: string; };
 
 export type ReservationSQL = Omit<Reservation, 'form'> & { form: FormSQL; };
+
+export type UpdateReservationSQL = Omit<Partial<ReservationSQL>, 'form'> & { form: Partial<Omit<FormSQL, 'date'>> & { date: string; }; };
 
 export interface createReservationResponse {
     status: 'added';
