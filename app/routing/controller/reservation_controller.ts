@@ -62,7 +62,6 @@ export default class Timetable {
     private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
         const reservation = await ReservationModel.findOne({ where: { id: input.id } });
         if (reservation) {
-
             const { timetable, form, payment, isPayed } = input;
             timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
             timetable?.transformX !== undefined ? reservation.set({ transformX: timetable?.transformX }) : null;
@@ -177,7 +176,17 @@ export default class Timetable {
             return notAcceptable(this.res, 'Brak uprawnień');
         }
         if (!this.errors.isEmpty()) {
-            return notAcceptable(this.res, 'Błędne dane');
+            return notAcceptable(this.res, 'Błędne dane formularza');
+        }
+        if (reservation.form.timeFrom !== undefined) {
+            if (reservation.form.timeFrom === '23:45' || parseFloat(reservation.form.timeFrom) >= 24 || parseFloat(reservation.form.timeFrom) < 0) {
+                return notAcceptable(this.res, 'Nieprawidłowa godz. "od"');
+            }
+        }
+        if (reservation.payment?.hourCount !== undefined) {
+            if (reservation.payment?.hourCount < 0.5) {
+                return notAcceptable(this.res, 'Min. czas gry 30 min.');
+            }
         }
         const result = await this.updateFields(reservation);
         if (result) {

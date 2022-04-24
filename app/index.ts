@@ -71,13 +71,13 @@ Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
-// const server = https.createServer({ key: privateKey, cert: certificate }, app);
-
-// server.listen(port, () => {
-//     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
-//     connectToBase();
-// });
-app.listen(port, () => {
+const server = https.createServer({ key: privateKey, cert: certificate }, app);
+server.listen(port, () => {
     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
     connectToBase();
 });
+
+// app.listen(port, () => {
+//     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
+//     connectToBase();
+// });
