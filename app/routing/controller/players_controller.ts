@@ -134,7 +134,7 @@ export default class User {
         if (isExist) {
             return notAcceptable(this.res, 'Taki gracz istniej');
         }
-        const newPlayer = await Players.create({ name, surname, telephone, email, opponents, weeks, account, priceSummer, priceWinter, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceSummer, priceWinter, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
                 const el = opponents[i];
