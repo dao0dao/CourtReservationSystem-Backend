@@ -20,9 +20,9 @@ router.post('/players/addPlayer', [
     body('priceSummer').escape().optional({ checkFalsy: true }).isNumeric(),
     body('priceWinter').escape().optional({ checkFalsy: true }).isNumeric(),
     body('court').escape().optional({ checkFalsy: true }).isNumeric(),
-    body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 20 }),
     body('tension').escape().optional({ checkFalsy: true }).isNumeric().isLength({ max: 2 }),
-    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }),
     body('weeks').custom(
         (val) => {
             const regEx = /(\<|\>|\/){1,}/g;
@@ -41,7 +41,7 @@ router.post('/players/addPlayer', [
             return true;
         }
     ),
-    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -\n' }),
+    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).addPlayer();
 });
@@ -56,9 +56,9 @@ router.post('/players/editPlayer', [
     body('priceSummer').escape().optional({ checkFalsy: true }).isNumeric(),
     body('priceWinter').escape().optional({ checkFalsy: true }).isNumeric(),
     body('court').escape().optional({ checkFalsy: true }).isNumeric(),
-    body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 20 }),
     body('tension').escape().optional({ checkFalsy: true }).isNumeric().isLength({ max: 2 }),
-    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }).isAlphanumeric(['pl-Pl'], { ignore: ' -' }),
+    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 20 }),
     body('weeks').custom(
         (val) => {
             const regEx = /(\<|\>|\/){1,}/g;
@@ -77,7 +77,7 @@ router.post('/players/editPlayer', [
             return true;
         }
     ),
-    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }).isAlphanumeric(['pl-Pl'], { ignore: ' -\n' }),
+    body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).updatePlayer();
 });

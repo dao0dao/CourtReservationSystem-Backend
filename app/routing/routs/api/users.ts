@@ -15,10 +15,10 @@ router.get('/user', putUser, cookie('sid_').escape(), (req: Request, res: Respon
 
 router.post('/user', putUser, [
     cookie('sid_').escape(),
-    body('name').isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }).escape(),
-    body('login').isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }).escape(),
-    body('newPassword').isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }).escape(),
-    body('confirmNewPassword').isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }).escape().custom((val: string, { req }) => {
+    body('name').escape().isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }),
+    body('login').escape().isLength({ min: 3, max: 15 }),
+    body('newPassword').escape().isLength({ min: 5, max: 10 }),
+    body('confirmNewPassword').escape().isLength({ min: 5, max: 10 }).custom((val: string, { req }) => {
         if (val !== req.body.newPassword) {
             throw new Error('Passwords does not match');
         }
@@ -30,10 +30,10 @@ router.post('/user', putUser, [
 
 router.post('/user/create', putUser, [
     cookie('sid_').escape(),
-    body('name').escape().isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }),
-    body('login').escape().isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }),
-    body('password').escape().isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }),
-    body('confirmPassword').escape().isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }).escape().custom((val: string, { req }) => {
+    body('name').escape().isLength({ min: 3, max: 15 }),
+    body('login').escape().isLength({ min: 3, max: 15 }),
+    body('password').escape().isLength({ min: 5, max: 10 }),
+    body('confirmPassword').escape().isLength({ min: 5, max: 10 }).custom((val: string, { req }) => {
         if (val !== req.body.password) {
             throw new Error('Passwords does not match');
         }
@@ -60,9 +60,9 @@ router.post('/user/list/update', putUser, [
             throw new Error('Invalid id');
         }),
     body('name').escape().isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }),
-    body('login').escape().isAlphanumeric(['pl-PL']).isLength({ min: 3, max: 15 }),
-    body('password').escape().isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }),
-    body('confirmPassword').escape().isAlphanumeric(['pl-PL']).isLength({ min: 5, max: 10 }).escape().custom((val: string, { req }) => {
+    body('login').escape().isLength({ min: 3, max: 15 }),
+    body('password').escape().isLength({ min: 5, max: 10 }),
+    body('confirmPassword').escape().isLength({ min: 5, max: 10 }).custom((val: string, { req }) => {
         if (val !== req.body.password) {
             throw new Error('Passwords does not match');
         }

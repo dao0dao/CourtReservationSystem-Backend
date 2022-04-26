@@ -8,8 +8,8 @@ const router = Router();
 
 router.post('/login', [
     cookie('sid_').escape(),
-    body('nick').escape().isAlpha(),
-    body('password').escape().isAlphanumeric()
+    body('nick').escape(),
+    body('password').escape()
 ], (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).login());
 
 router.get('/isLogin', cookie('sid_').escape(), (req: Request, res: Response, next: NextFunction) => new Auth(req, res, next).isLogin());
