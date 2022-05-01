@@ -201,7 +201,7 @@ export default class Timetable {
         }
         const reservation: ReservationSQL = await ReservationModel.findOne({
             where: {
-                id: this.req.params
+                id: this.req.params.id
             }
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         const today: number = new Date(this.getToday()).getTime();

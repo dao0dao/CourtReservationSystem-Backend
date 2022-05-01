@@ -8,10 +8,12 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { join } = require('path');
 import https from 'https';
+import http from 'http';
 import { readFileSync } from 'fs';
 // Utility
 import sequelize from './utils/database';
 import appDir, { PublicFiles } from './utils/appDir';
+import createFile from './utils/createFile';
 //Rout
 import rootRout from './routing/routs/root';
 import auth from './routing/routs/api/authorization';
@@ -26,6 +28,7 @@ import Account from './models/account';
 import Payments from './models/payments';
 
 import { creatPassword } from './utils/bcrypt';
+import writeUnhandledErrorToLog from './utils/unhandledErrors';
 
 
 const app = express();
@@ -74,21 +77,35 @@ Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
-function StartServer() {
-    /* Zdalny dostęp */
-    // const server = https.createServer({ key: privateKey, cert: certificate }, app);
-    // server.listen(port, () => {
-    //     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
-    //     connectToBase();
-    // });
+writeUnhandledErrorToLog();
 
+if (process.env.MODE === 'DEV') {
     /* Lokalny dostęp */
-    app.listen(port, () => {
+    const server = http.createServer(app);
+    server.listen(port, () => {
         console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
         connectToBase();
     });
-
-
 }
 
-StartServer();
+if (process.env.MODE !== 'DEV') {
+    /* Zdalny dostęp */
+    const server = https.createServer({ key: privateKey, cert: certificate }, app);
+    server.listen(port, () => {
+        console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
+        connectToBase();
+    });
+    //Ponowne uruchomienie po nieobsłużonym błędzie w trybie PRODUCTION
+    process.on("exit", function () {
+        require("child_process").spawn(
+            process.argv.shift(),
+            process.argv,
+            {
+                cwd: process.cwd(),
+                detached: true,
+                stdio: "inherit"
+            }
+        );
+
+    });
+}
