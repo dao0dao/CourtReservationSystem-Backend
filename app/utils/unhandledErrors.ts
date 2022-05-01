@@ -11,8 +11,7 @@ function writeUnhandledErrorToLog() {
         const date = new Date();
         const data = `Nieobsłużony błąd, powód: ${reason.message} w plikach: ${reason.stack}`;
         const filename = date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + 'T.' + date.getHours() + '.' + date.getMinutes() + '.log';
-        const path = join(appDir, 'logs', 'unhandled');
-        await createFile(path, filename, data);
+        await createFile(filename, data);
         process.exit(1);
     });
 }
