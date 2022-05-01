@@ -1,8 +1,4 @@
-import appDir from "./appDir";
-import { join } from 'path';
-import createFile from "./createFile";
-
-
+import createFile from "./utils/createFile";
 
 function writeUnhandledErrorToLog() {
 
