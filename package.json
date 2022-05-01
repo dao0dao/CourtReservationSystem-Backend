@@ -1,12 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Bazad danych dla Michała Mojżeszka",
+  "description": "Bazad danych dla Michała Mojrzeszka",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon ./server/index.js",
-    "start": "node ./server/index.js"
+    "local": "node ./server/index.js"
   },
   "author": "Demid Greshnikov",
   "license": "GPL-2.0-only",

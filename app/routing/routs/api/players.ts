@@ -5,6 +5,7 @@ import { NextFunction, Response } from 'express';
 import Request from '../../interfaces/request_interfaces';
 import { putUser } from '../../../utils/putUser';
 import Players from '../../controller/players_controller';
+import { unescapeField } from '../../../utils/unescapeField';
 
 const router = new Router();
 
@@ -42,7 +43,7 @@ router.post('/players/addPlayer', [
         }
     ),
     body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
-], putUser, (req: Request, res: Response, next: NextFunction) => {
+], unescapeField('notes'), putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).addPlayer();
 });
 
@@ -78,7 +79,7 @@ router.post('/players/editPlayer', [
         }
     ),
     body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
-], putUser, (req: Request, res: Response, next: NextFunction) => {
+], unescapeField('notes'), putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).updatePlayer();
 });
 

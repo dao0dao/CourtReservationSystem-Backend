@@ -194,5 +194,23 @@ export default class Timetable {
         }
         return notAcceptable(this.res, 'Błędne dane');
     }
-}
 
+    async deleteReservation() {
+        if (!this.req.user) {
+            return unauthorized(this.res);
+        }
+        const reservation: ReservationSQL = await ReservationModel.findOne({
+            where: {
+                id: this.req.params
+            }
+        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const today: number = new Date(this.getToday()).getTime();
+        const reservationDay: number = new Date(reservation.form?.date).getTime();
+        const dateSubtract: number = today - reservationDay;
+        if (!this.req.user.isAdmin && dateSubtract > 0) {
+            return notAcceptable(this.res, 'Brak uprawnień');
+        }
+        await reservation.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
+        return this.res.status(202).json({ deleted: true });
+    }
+}

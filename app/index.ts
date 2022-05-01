@@ -1,3 +1,4 @@
+import process from 'process';
 //Ustawienie zmiennych
 import { setVariables } from './varibles';
 setVariables();
@@ -26,13 +27,15 @@ import Payments from './models/payments';
 
 import { creatPassword } from './utils/bcrypt';
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 
 const privateKey = readFileSync(join(appDir, '..', 'server.key'));
 const certificate = readFileSync(join(appDir, '..', 'server.cert'));
 
-if (process.env.DevMode) {
+
+if (process.env.MODE === 'DEV') {
     app.use(cors({
         origin: [
             "http://localhost:4200",
@@ -71,13 +74,21 @@ Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 
-// const server = https.createServer({ key: privateKey, cert: certificate }, app);
-// server.listen(port, () => {
-//     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
-//     connectToBase();
-// });
+function StartServer() {
+    /* Zdalny dostęp */
+    // const server = https.createServer({ key: privateKey, cert: certificate }, app);
+    // server.listen(port, () => {
+    //     console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
+    //     connectToBase();
+    // });
 
-app.listen(port, () => {
-    console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
-    connectToBase();
-});
+    /* Lokalny dostęp */
+    app.listen(port, () => {
+        console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
+        connectToBase();
+    });
+
+
+}
+
+StartServer();

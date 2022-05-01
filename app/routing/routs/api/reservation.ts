@@ -50,4 +50,9 @@ router.put('/reservation', [
     check('isPayed').escape().isAlpha().optional({ checkFalsy: true }).isLength({ min: 4, max: 5 }),
 ], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).updateReservation(); });
 
-export default router;
+router.delete('/reservation/:id', [
+    cookie('sid_').escape()
+], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).deleteReservation(); }
+);
+
+export default router; 
