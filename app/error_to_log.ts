@@ -12,4 +12,4 @@ function writeUnhandledErrorToLog() {
     });
 }
 
-export default writeUnhandledErrorToLog;
+export { writeUnhandledErrorToLog };

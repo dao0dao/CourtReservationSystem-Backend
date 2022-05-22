@@ -44,7 +44,7 @@ const Players = sequelize.define('players', {
         allowNull: true,
     },
     tension: {
-        type: Sequelize.DataTypes.INTEGER,
+        type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },
     balls: {

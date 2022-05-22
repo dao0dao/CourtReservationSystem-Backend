@@ -28,7 +28,7 @@ import Account from './models/account';
 import Payments from './models/payments';
 
 import { creatPassword } from './utils/bcrypt';
-import writeUnhandledErrorToLog from './unhandledErrors';
+import { writeUnhandledErrorToLog } from './error_to_log';
 
 
 const app = express();
