@@ -1,6 +1,6 @@
 import appDir from "./appDir";
 import { join } from 'path';
-import { access, writeFile, mkdir, readFile, unlink } from 'fs/promises';
+import { access, writeFile, mkdir, readFile, unlink, readdir } from 'fs/promises';
 import { expiresDate } from "./expiresDate";
 
 export const createSessionFile = async (id: string, userId: string, isAdmin: boolean, name: string) => {
@@ -66,4 +66,27 @@ export const removeSession = async (key: string): Promise<boolean> => {
     }
     await unlink(sessionPath).catch((err) => { if (err) { console.log(err); return true; } });
     return true;
+};
+
+export const clearSessionFolder = () => {
+    const deadline = new Date().getTime();
+    const sessionFolderPath = join(appDir, 'session');
+    readdir(sessionFolderPath, 'utf8')
+        .then((files: string[]) => {
+            files.forEach((fileName: string) => {
+                const filePath = join(sessionFolderPath, fileName);
+                readFile(filePath, 'utf-8')
+                    .then(res => {
+                        return JSON.parse(res);
+                    })
+                    .then((data) => {
+                        const expiredTime = new Date(data.expires).getTime();
+                        if (expiredTime < deadline) {
+                            unlink(filePath).catch(err => { });
+                        }
+                    })
+                    .catch(() => { });
+            });
+        })
+        .catch(() => { });
 };

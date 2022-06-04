@@ -13,13 +13,9 @@ import { readFileSync } from 'fs';
 // Utility
 import sequelize from './utils/database';
 import appDir, { PublicFiles } from './utils/appDir';
-import createFile from './utils/createFile';
-//Rout
+//Routs
 import rootRout from './routing/routs/root';
-import auth from './routing/routs/api/authorization';
-import user from './routing/routs/api/users';
-import players from './routing/routs/api/players';
-import reservation from './routing/routs/api/reservation';
+import apiRouts from './routing/routs/api';
 // Modele tabel
 import Coaches from './models/admin';
 import Players from './models/players';
@@ -27,8 +23,8 @@ import Opponents from './models/opponents';
 import Account from './models/account';
 import Payments from './models/payments';
 
-import { creatPassword } from './utils/bcrypt';
 import { writeUnhandledErrorToLog } from './error_to_log';
+import { clearSessionFolder } from './utils/handleSession';
 
 
 const app = express();
@@ -53,10 +49,7 @@ app.use(express.json());
 app.use(express.static(PublicFiles));
 
 
-app.use('/api', auth);
-app.use('/api', user);
-app.use('/api', players);
-app.use('/api', reservation);
+app.use('/api', apiRouts);
 app.use(rootRout);
 
 const connectToBase = () => {
@@ -85,6 +78,11 @@ if (process.env.MODE === 'DEV') {
     server.listen(port, () => {
         console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
         connectToBase();
+        //czyszczenie plików sesyjnych co godzinę
+        clearSessionFolder();
+        setInterval(() => {
+            clearSessionFolder();
+        }, 60 * 60 * 1000);
     });
 }
 
@@ -94,6 +92,11 @@ if (process.env.MODE !== 'DEV') {
     server.listen(port, () => {
         console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
         connectToBase();
+        //czyszczenie plików sesyjnych co godzinę
+        clearSessionFolder();
+        setInterval(() => {
+            clearSessionFolder();
+        }, 60 * 60 * 1000);
     });
     //Ponowne uruchomienie po nieobsłużonym błędzie w trybie PRODUCTION
     process.on("exit", function () {
