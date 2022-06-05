@@ -59,7 +59,7 @@ export default class Authorization {
     async isLogin() {
         const { sid_ } = this.req.cookies;
         if (!sid_) {
-            return endSession(this.res);
+            return this.res.json({ isLogin: false });
         }
         const result = await checkSessionFile(sid_);
         if (!result.isLogin) {
