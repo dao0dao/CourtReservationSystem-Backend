@@ -29,16 +29,6 @@ const Players = sequelize.define('players', {
         allowNull: true,
         defaultValue: 0,
     },
-    priceSummer: {
-        type: Sequelize.DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 0,
-    },
-    priceWinter: {
-        type: Sequelize.DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 0,
-    },
     stringsName: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
@@ -59,6 +49,11 @@ const Players = sequelize.define('players', {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },
+    priceListId: {
+        type: Sequelize.DataTypes.UUID,
+        defaultValue: Sequelize.UUIDV4,
+        allowNull: true
+    }
 });
 sequelize.createSchema('players', { ifNotExists: true });
 export default Players;

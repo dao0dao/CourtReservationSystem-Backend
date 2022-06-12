@@ -4,6 +4,8 @@ import Request from '../interfaces/request_interfaces';
 const { validationResult } = require('express-validator');
 import PriceListModel from '../../models/priceList';
 import { PriceList } from '../interfaces/priceList_interfaces';
+import Players from '../../models/players';
+import { Player, PlayerSQL } from '../interfaces/players_interfaces';
 
 export default class PriceListController {
     private req: Request;
@@ -93,6 +95,15 @@ export default class PriceListController {
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         if (priceList) {
             priceList.destroy();
+            Players.findAll({
+                where: { priceListId: id }
+            }).then((players: PlayerSQL[]) => {
+                players.forEach(pl => {
+                    pl.priceListId = '';
+                    pl.save()
+                });
+            });
+
         }
         return this.res.json({ deleted: true });
     }

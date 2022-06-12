@@ -12,15 +12,7 @@ const Account = sequelize.define('account', {
         type: Sequelize.DataTypes.DECIMAL(10, 2),
         allowNull: false,
         defaultValue: 0
-    },
-    priceSummer: {
-        type: Sequelize.DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
-    priceWinter: {
-        type: Sequelize.DataTypes.DECIMAL(10, 2),
-        allowNull: true,
-    },
+    }
 });
 sequelize.createSchema('account', { ifNotExists: true });
 export default Account;

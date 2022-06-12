@@ -30,6 +30,7 @@ export type Opponent = { id: string, name: string, surname: string; };
 export type OpponentSQL = { id: string; };
 
 export interface PlayerSQL {
+    save();
     id: string,
     weeks: Week[],
     opponents: OpponentSQL[],
@@ -38,8 +39,7 @@ export interface PlayerSQL {
     telephone: number,
     email?: string,
     account?: number,
-    priceSummer?: number,
-    priceWinter?: number,
+    priceListId?: string,
     court?: number,
     stringsName?: string,
     tension: number,
@@ -47,13 +47,14 @@ export interface PlayerSQL {
     notes?: string;
 };
 
+export type PlayerIncludedSQL = Omit<PlayerSQL, 'priceListId'> & { priceList: { id: string; }; };
+
 export type Player = Omit<PlayerSQL, 'opponents'> & { opponents: Opponent[]; };
 
 export interface AccountSql {
     playerId: string,
     account: number,
-    priceSummer?: number,
-    priceWinter?: number,
+    priceList: string;
 }
 
 export interface PlayerError {
@@ -62,8 +63,7 @@ export interface PlayerError {
     telephone?: boolean;
     email?: boolean;
     account?: boolean;
-    priceSummer?: boolean;
-    priceWinter?: boolean;
+    priceList?: boolean;
     court?: boolean;
     strings?: boolean;
     tension?: boolean;

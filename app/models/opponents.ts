@@ -14,4 +14,5 @@ const Opponents = sequelize.define('opponents', {
     },
 });
 sequelize.createSchema('opponents', { ifNotExists: true });
+
 export default Opponents;

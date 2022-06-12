@@ -38,15 +38,17 @@ export default class Timetable {
     private async getAllPlayers(): Promise<Player[]> {
         const allPlayers: Player[] = [];
         const players: PlayerSQL[] = await Players.findAll({
-            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'priceSummer', 'priceWinter', 'tension', 'balls', 'weeks', 'notes'],
+            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         players.forEach((pl: PlayerSQL) => {
-            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents } = pl;
+            // const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents } = pl;
+            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, opponents } = pl;
             const newPlayer: Player = {
-                id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents: []
+                id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, opponents: []
+                // id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents: []
             };
             opponents.forEach(el => {
                 const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));

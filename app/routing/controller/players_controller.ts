@@ -1,8 +1,9 @@
 import { NextFunction, Response } from 'express';
-import { PlayerSQL, PlayerError, Player, Week, OpponentSQL } from '../interfaces/players_interfaces';
+import { PlayerSQL, PlayerError, Player, Week, OpponentSQL, PlayerIncludedSQL } from '../interfaces/players_interfaces';
 import Request from '../interfaces/request_interfaces';
 import Players from '../../models/players';
 import Opponents from '../../models/opponents';
+import PriceListModel from '../../models/priceList';
 import Account from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
 const { validationResult } = require('express-validator');
@@ -125,7 +126,7 @@ export default class User {
             };
             return badRequest(this.res, error);
         }
-        const { name, surname, telephone, email, opponents, weeks, account, priceSummer, priceWinter, court, stringsName, tension, balls, notes } = player;
+        const { name, surname, telephone, email, opponents, weeks, account, priceListId, court, stringsName, tension, balls, notes } = player;
         const isExist = await Players.findOne({
             where: {
                 name, surname
@@ -134,14 +135,14 @@ export default class User {
         if (isExist) {
             return notAcceptable(this.res, 'Taki gracz istniej');
         }
-        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceSummer, priceWinter, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
                 const el = opponents[i];
                 await Opponents.create({ playerId: newPlayer.id, opponentId: el.id }).catch(err => { if (err) { return databaseFailed(this.res); } });
             }
         }
-        await Account.create({ playerId: newPlayer.id, account, priceSummer, priceWinter }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        await Account.create({ playerId: newPlayer.id, account, }).catch(err => { if (err) { return databaseFailed(this.res); } });
         return this.res.json({ player: 'created', id: newPlayer.id });
     }
 
@@ -151,15 +152,16 @@ export default class User {
         }
         const allPlayers: Player[] = [];
         const players: PlayerSQL[] = await Players.findAll({
-            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'priceSummer', 'priceWinter', 'tension', 'balls', 'weeks', 'notes'],
+            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'priceListId', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
             include: [
-                { model: Opponents, attributes: [['opponentId', 'id']] }
+                { model: Opponents, attributes: [['opponentId', 'id']] },
             ]
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         players.forEach((pl: PlayerSQL) => {
-            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents } = pl;
+            const save = () => { };
+            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, opponents, priceListId } = pl;
             const newPlayer: Player = {
-                id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, priceSummer, priceWinter, opponents: []
+                id, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, weeks, notes, account, opponents: [], save
             };
             opponents.forEach(el => {
                 const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));
@@ -170,7 +172,6 @@ export default class User {
             allPlayers.push(newPlayer);
         });
         this.res.json(allPlayers);
-
     }
 
     async updatePlayer() {
@@ -190,7 +191,7 @@ export default class User {
             };
             return badRequest(this.res, error);
         }
-        const { id, weeks, opponents, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes }: PlayerSQL = this.req.body;
+        const { id, weeks, opponents, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, notes }: PlayerSQL = this.req.body;
         const player = await Players.findOne({ where: { id } });
         const samePlayer = await Players.findOne({
             where: {
@@ -220,7 +221,7 @@ export default class User {
                 Opponents.create({ playerId: id, opponentId: op.id });
             }
         });
-        player.set({ weeks, name, surname, telephone, email, priceSummer, priceWinter, court, stringsName, tension, balls, notes });
+        player.set({ weeks, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, notes });
         player.save()
             .then(() => {
                 return this.res.json({ updated: true });
@@ -236,11 +237,11 @@ export default class User {
             return this.res.status(400).json({ badRequest: true });
         }
         const id = this.req.params.id;
-        const player = await Players.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        const player = await Players.findOne({ where: { id } });
         if (!player) {
             return this.res.status(400).json({ deletedPlayer: true });
         }
-        await player.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
+        await player.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
         return this.res.json({ deletedPlayer: true });
     }
-}
+} 

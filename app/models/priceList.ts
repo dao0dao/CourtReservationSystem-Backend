@@ -15,7 +15,7 @@ const PriceListModel = sequelize.define('priceList', {
     hours: {
         type: Sequelize.DataTypes.JSON,
         allowNull: false,
-    },
+    }
 });
 sequelize.createSchema('priceList', { ifNotExists: true });
 export default PriceListModel;

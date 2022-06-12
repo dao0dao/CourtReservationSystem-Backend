@@ -64,7 +64,7 @@ const ReservationModel = sequelize.define('reservation', {
         type: Sequelize.DataTypes.INTEGER,
         allowNull: false
     },
-    isPayed: {
+    isPayed: { 
         type: Sequelize.DataTypes.BOOLEAN,
         allowNull: false
     },

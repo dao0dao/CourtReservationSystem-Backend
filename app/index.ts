@@ -22,10 +22,10 @@ import Players from './models/players';
 import Opponents from './models/opponents';
 import Account from './models/account';
 import Payments from './models/payments';
+import PriceList from './models/priceList';
 
 import { writeUnhandledErrorToLog } from './error_to_log';
 import { clearSessionFolder } from './utils/handleSession';
-
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -69,6 +69,7 @@ Coaches.hasMany(Payments, { as: 'coachesId', onDelete: 'NO ACTION' });
 Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
+// Players.belongsTo(PriceList, { onDelete: 'SET NULL', allowNull: true });
 
 writeUnhandledErrorToLog();
 

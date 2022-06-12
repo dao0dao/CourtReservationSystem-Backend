@@ -24,35 +24,7 @@ const Coaches = sequelize.define('coaches', {
     isAdmin: {
         type: Sequelize.DataTypes.BOOLEAN,
         defaultValue: false
-    },
-    canAddDeleteAdmin: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    canAddDeletePlayers: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    canEditPlayers: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    canEditSchedule: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    canDeleteYesterdaySchedule: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    canTakeFees: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    accessToStatics: {
-        type: Sequelize.DataTypes.BOOLEAN,
-        defaultValue: false
-    },
+    }
 });
-
+sequelize.createSchema('coaches', { ifNotExists: true });
 export default Coaches;
