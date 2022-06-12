@@ -43,7 +43,7 @@ export interface PlayerSQL {
     court?: number,
     stringsName?: string,
     tension: number,
-    balls?: string,
+    racquet?: string,
     notes?: string;
 };
 
@@ -67,7 +67,7 @@ export interface PlayerError {
     court?: boolean;
     strings?: boolean;
     tension?: boolean;
-    balls?: boolean;
+    racquet?: boolean;
     notes?: boolean;
     opponents?: boolean;
     weeks?: boolean;

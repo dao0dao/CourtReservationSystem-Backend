@@ -126,7 +126,7 @@ export default class User {
             };
             return badRequest(this.res, error);
         }
-        const { name, surname, telephone, email, opponents, weeks, account, priceListId, court, stringsName, tension, balls, notes } = player;
+        const { name, surname, telephone, email, opponents, weeks, account, priceListId, court, stringsName, tension, racquet, notes } = player;
         const isExist = await Players.findOne({
             where: {
                 name, surname
@@ -144,7 +144,7 @@ export default class User {
         if (samePlayer) {
             return this.res.status(400).json({ alreadyExist: true });
         }
-        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, racquet, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
                 const el = opponents[i];
@@ -161,16 +161,16 @@ export default class User {
         }
         const allPlayers: Player[] = [];
         const players: PlayerSQL[] = await Players.findAll({
-            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'priceListId', 'court', 'stringsName', 'tension', 'balls', 'weeks', 'notes'],
+            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'priceListId', 'court', 'stringsName', 'tension', 'racquet', 'weeks', 'notes'],
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] },
             ]
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         players.forEach((pl: PlayerSQL) => {
             const save = () => { };
-            const { id, name, surname, telephone, email, court, stringsName, tension, balls, weeks, notes, account, opponents, priceListId } = pl;
+            const { id, name, surname, telephone, email, court, stringsName, tension, racquet, weeks, notes, account, opponents, priceListId } = pl;
             const newPlayer: Player = {
-                id, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, weeks, notes, account, opponents: [], save
+                id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents: [], save
             };
             opponents.forEach(el => {
                 const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));
@@ -200,7 +200,7 @@ export default class User {
             };
             return badRequest(this.res, error);
         }
-        const { id, weeks, opponents, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, notes }: PlayerSQL = this.req.body;
+        const { id, weeks, opponents, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, notes }: PlayerSQL = this.req.body;
         const player = await Players.findOne({ where: { id } });
         const samePlayer = await Players.findOne({
             where: {
@@ -230,7 +230,7 @@ export default class User {
                 Opponents.create({ playerId: id, opponentId: op.id });
             }
         });
-        player.set({ weeks, name, surname, telephone, email, priceListId, court, stringsName, tension, balls, notes });
+        player.set({ weeks, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, notes });
         player.save()
             .then(() => {
                 return this.res.json({ updated: true });

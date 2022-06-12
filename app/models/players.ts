@@ -37,7 +37,7 @@ const Players = sequelize.define('players', {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },
-    balls: {
+    racquet: {
         type: Sequelize.DataTypes.STRING,
         allowNull: true,
     },

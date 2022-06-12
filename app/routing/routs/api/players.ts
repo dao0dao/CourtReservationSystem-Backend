@@ -22,7 +22,7 @@ router.post('/players/addPlayer', [
     body('court').escape().optional({ checkFalsy: true }).isNumeric(),
     body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 250 }),
     body('tension').escape().optional({ checkFalsy: true }).isLength({ max: 250 }),
-    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 150 }),
+    body('racquet').escape().optional({ checkFalsy: true }).isLength({ max: 150 }),
     body('weeks').custom(
         (val) => {
             const regEx = /(\<|\>|\/){1,}/g;
@@ -42,7 +42,7 @@ router.post('/players/addPlayer', [
         }
     ),
     body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
-], unescapeField(['notes', 'strings', 'tension', 'balls']), putUser, (req: Request, res: Response, next: NextFunction) => {
+], unescapeField(['notes', 'strings', 'tension', 'racquet']), putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).addPlayer();
 });
 
@@ -53,12 +53,11 @@ router.post('/players/editPlayer', [
     body('surname').escape().isLength({ min: 2, max: 15 }).isAlpha(['pl-PL'], { ignore: ' -' }),
     body('telephone').escape().isLength({ min: 9, max: 9 }).isNumeric(),
     body('email').escape().optional({ checkFalsy: true }).isEmail().normalizeEmail(),
-    body('priceSummer').escape().optional({ checkFalsy: true }).isNumeric(),
-    body('priceWinter').escape().optional({ checkFalsy: true }).isNumeric(),
+    body('priceListId').escape().optional({ checkFalsy: true }),
     body('court').escape().optional({ checkFalsy: true }).isNumeric(),
     body('strings').escape().optional({ checkFalsy: true }).isLength({ max: 250 }),
     body('tension').escape().optional({ checkFalsy: true }).isLength({ max: 250 }),
-    body('balls').escape().optional({ checkFalsy: true }).isLength({ max: 150 }),
+    body('racquet').escape().optional({ checkFalsy: true }).isLength({ max: 150 }),
     body('weeks').custom(
         (val) => {
             const regEx = /(\<|\>|\/){1,}/g;
@@ -78,7 +77,7 @@ router.post('/players/editPlayer', [
         }
     ),
     body('notes').escape().optional({ checkFalsy: true }).isLength({ max: 500 }),
-], unescapeField(['notes', 'strings', 'tension', 'balls']), putUser, (req: Request, res: Response, next: NextFunction) => {
+], unescapeField(['notes', 'strings', 'tension', 'racquet']), putUser, (req: Request, res: Response, next: NextFunction) => {
     return new Players(req, res, next).updatePlayer();
 });
 
