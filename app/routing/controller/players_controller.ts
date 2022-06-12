@@ -135,6 +135,15 @@ export default class User {
         if (isExist) {
             return notAcceptable(this.res, 'Taki gracz istniej');
         }
+        const samePlayer = await Players.findOne({
+            where: {
+                name,
+                surname
+            }
+        });
+        if (samePlayer) {
+            return this.res.status(400).json({ alreadyExist: true });
+        }
         const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, balls, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
