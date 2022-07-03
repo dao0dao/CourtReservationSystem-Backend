@@ -9,5 +9,5 @@ export interface ChargeAccount {
     value: number | string,
     name: string;
     serviceName: string;
-    action: 'charge' | 'payment' | 'cash' | 'transfer';
+    paymentMethod: 'charge' | 'payment' | 'cash' | 'transfer';
 }

@@ -28,7 +28,8 @@ router.post('/reservation/add', [
     check('form.guestOne').escape().isAlphanumeric(['pl-PL'], { ignore: ' -' }).optional({ checkFalsy: true }),
     check('form.guestTwo').escape().isAlphanumeric(['pl-PL'], { ignore: ' -' }).optional({ checkFalsy: true }),
     check('payment.hourCount').escape().isNumeric(['pl-PL'], { no_symbols: false }).isLength({ min: 1, max: 5 }),
-    check('isPayed').escape().isAlpha().isLength({ min: 4, max: 5 }),
+    check('isPlayerOnePayed').escape(),
+    check('isPlayerTwoPayed').escape(),
 ], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).addReservation(); });
 
 router.put('/reservation', [
@@ -47,7 +48,8 @@ router.put('/reservation', [
     check('form.guestOne').escape().optional({ checkFalsy: true }).isAlphanumeric(['pl-PL'], { ignore: ' -' }).optional({ checkFalsy: true }),
     check('form.guestTwo').escape().optional({ checkFalsy: true }).isAlphanumeric(['pl-PL'], { ignore: ' -' }).optional({ checkFalsy: true }),
     check('payment.hourCount').escape().optional({ checkFalsy: true }).isNumeric(['pl-PL'], { no_symbols: false }).isLength({ min: 1, max: 5 }),
-    check('isPayed').escape().isAlpha().optional({ checkFalsy: true }).isLength({ min: 4, max: 5 }),
+    check('isPlayerOnePayed').escape(),
+    check('isPlayerOnePayed').escape(),
 ], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).updateReservation(); });
 
 router.delete('/reservation/:id', [

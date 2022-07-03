@@ -8,7 +8,7 @@ const PaymentsHistory = sequelize.define('paymentsHistory', {
         primaryKey: true,
         allowNull: false
     },
-    action: {
+    paymentMethod: {
         type: Sequelize.DataTypes.STRING,
         allowNull: false
     },

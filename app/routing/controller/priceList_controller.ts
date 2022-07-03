@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 import PriceListModel from '../../models/priceList';
 import { PriceList } from '../interfaces/priceList_interfaces';
 import Players from '../../models/players';
-import { Player, PlayerSQL } from '../interfaces/players_interfaces';
+import { PlayerSQL } from '../interfaces/players_interfaces';
 
 export default class PriceListController {
     private req: Request;

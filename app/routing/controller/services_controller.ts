@@ -77,12 +77,12 @@ export default class ServiceController {
         const data: ChargeAccount = this.req.body;
         const playerAccount = await AccountModel.findOne({ where: { playerId: data.id } }).catch((err) => { if (err) { return notAcceptable(this.res, 'Brak konta'); } });
         const beforeValue: number = parseFloat(playerAccount.account);
-        if (data.action === 'charge') {
+        if (data.paymentMethod === 'charge') {
             const afterValue: number = parseFloat(data.value.toString()) + beforeValue;
             playerAccount.set({ account: afterValue });
             await playerAccount.save().catch((err) => { if (err) { return notAcceptable(this.res, 'Błąd aktualizacji kwoty'); } });
             await PaymentsHistoryModel.create({
-                action: 'data.action',
+                paymentMethod: data.paymentMethod,
                 value: data.value,
                 playerId: data.id,
                 playerName: data.name,
@@ -93,9 +93,9 @@ export default class ServiceController {
             }).catch((err) => { if (err) { return notAcceptable(this.res, 'Nie można zapisać w historii'); } });
             this.res.status(201).json({ message: 'updated' });
         }
-        if (data.action === 'cash' || data.action === 'payment' || data.action === 'transfer') {
+        if (data.paymentMethod === 'cash' || data.paymentMethod === 'payment' || data.paymentMethod === 'transfer') {
             let afterValue: number |string = '';
-            if(data.action === 'payment'){
+            if(data.paymentMethod === 'payment'){
                 afterValue = beforeValue - parseFloat(data.value.toString());
             }else{
                 afterValue = beforeValue
@@ -103,7 +103,7 @@ export default class ServiceController {
             playerAccount.set({ account: afterValue });
             await playerAccount.save().catch((err) => { if (err) { return notAcceptable(this.res, 'Błąd aktualizacji kwoty'); } });
             await PaymentsHistoryModel.create({
-                action: data.action,
+                paymentMethod: data.paymentMethod,
                 value: data.value,
                 playerId: data.id,
                 playerName: data.name,

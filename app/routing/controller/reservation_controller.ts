@@ -63,7 +63,7 @@ export default class Timetable {
     private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
         const reservation = await ReservationModel.findOne({ where: { id: input.id } });
         if (reservation) {
-            const { timetable, form, payment, isPayed } = input;
+            const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed } = input;
             timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
             timetable?.transformX !== undefined ? reservation.set({ transformX: timetable?.transformX }) : null;
             timetable?.transformY !== undefined ? reservation.set({ transformY: timetable?.transformY }) : null;
@@ -80,7 +80,8 @@ export default class Timetable {
 
             payment?.hourCount !== undefined ? reservation.set({ hourCount: payment?.hourCount }) : null;
 
-            isPayed !== undefined ? reservation.set({ isPayed }) : null;
+            isPlayerOnePayed !== undefined ? reservation.set({ isPlayerOnePayed }) : null;
+            isPlayerTwoPayed !== undefined ? reservation.set({ isPlayerTwoPayed }) : null;
 
             await reservation.save().catch(err => { if (err) { return databaseFailed(this.res); } });
             return true;
@@ -107,7 +108,7 @@ export default class Timetable {
             attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount', 'isPayed']
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         reservationArr.forEach(r => {
-            const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPayed } = r;
+            const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed } = r;
             let playerOne: Player | undefined;
             let playerTwo: Player | undefined;
             if (playerOneId) {
@@ -127,7 +128,8 @@ export default class Timetable {
                 payment: {
                     hourCount
                 },
-                isPayed
+                isPlayerOnePayed,
+                isPlayerTwoPayed
             };
             allReservations.push(reservation);
         });
@@ -142,7 +144,7 @@ export default class Timetable {
             return notAcceptable(this.res, 'Błędne dane');
         }
         const reservation: ReservationSQL = this.req.body;
-        const { timetable, form, payment, isPayed } = reservation;
+        const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed } = reservation;
         const { transformX, transformY, ceilHeight, zIndex } = timetable;
         const { date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo } = form;
         const { hourCount } = payment;
@@ -156,7 +158,7 @@ export default class Timetable {
         }
 
         const createdReservation = await ReservationModel.create({
-            transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPayed
+            transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         const response: createReservationResponse = {
             status: 'added',
