@@ -2,3 +2,5 @@ dist/
 node_modules/
 server/
 app/varibles.ts
+server.cert
+server.key
