@@ -93,12 +93,16 @@ export default class ServiceController {
             }).catch((err) => { if (err) { return notAcceptable(this.res, 'Nie można zapisać w historii'); } });
             this.res.status(201).json({ message: 'updated' });
         }
-        if (data.paymentMethod === 'cash' || data.paymentMethod === 'payment' || data.paymentMethod === 'transfer') {
-            let afterValue: number |string = '';
-            if(data.paymentMethod === 'payment'){
+        if (data.paymentMethod === 'cash' || data.paymentMethod === 'payment' || data.paymentMethod === 'transfer' || data.paymentMethod === 'debet') {
+            let afterValue: number | string = '';
+            let isPayed: boolean = true;
+            if (data.paymentMethod === 'payment') {
                 afterValue = beforeValue - parseFloat(data.value.toString());
-            }else{
-                afterValue = beforeValue
+            } else {
+                afterValue = beforeValue;
+            }
+            if (data.paymentMethod === 'debet') {
+                isPayed = false;
             }
             playerAccount.set({ account: afterValue });
             await playerAccount.save().catch((err) => { if (err) { return notAcceptable(this.res, 'Błąd aktualizacji kwoty'); } });
@@ -110,7 +114,8 @@ export default class ServiceController {
                 serviceName: data.serviceName,
                 accountBefore: beforeValue,
                 accountAfter: afterValue,
-                cashier: this.req.user.name
+                cashier: this.req.user.name,
+                isPayed
             }).catch((err) => { if (err) { return notAcceptable(this.res, 'Nie można zapisać w historii'); } });
             this.res.status(201).json({ message: 'updated' });
         }

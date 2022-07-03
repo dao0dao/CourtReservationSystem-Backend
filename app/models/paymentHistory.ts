@@ -39,7 +39,12 @@ const PaymentsHistory = sequelize.define('paymentsHistory', {
     cashier: {
         type: Sequelize.DataTypes.STRING,
         allowNull: false
-    }
+    },
+    isPayed: {
+        type: Sequelize.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    },
 
 });
 sequelize.createSchema('paymentsHistory', { ifNotExists: true });

@@ -105,7 +105,7 @@ export default class Timetable {
             where: {
                 date
             },
-            attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount', 'isPayed']
+            attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount']
         }).catch(err => { if (err) { return databaseFailed(this.res); } });
         reservationArr.forEach(r => {
             const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed } = r;
