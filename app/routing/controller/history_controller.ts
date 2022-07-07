@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator');
 import PaymentsHistoryModel from '../../models/paymentHistory';
 import AccountModel from '../../models/account';
 import { Op } from 'sequelize';
+import { BalancePayment } from '../interfaces/history_interfaces';
 
 export default class HistoryController {
     private req: Request;
@@ -41,14 +42,15 @@ export default class HistoryController {
         const payment = await PaymentsHistoryModel.findAll({
             where: {
                 playerId: playerId,
-                createdAt: { [Op.between]: [dateFrom, dateTo] }
+                createdAt: { [Op.between]: [dateFrom, dateTo] },
             },
             attributes: ['id', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid']]
         })
             .catch(err => { if (err) { return databaseFailed(this.res); } });
         if (payment.length) {
             payment.forEach(p => {
-                p.dataValues.date = new Date(p.dataValues.date).toLocaleString();
+                p.dataValues.date = new Date(p.dataValues.date).toLocaleDateString();
+                p.dataValues.isPaid === 0 ? p.dataValues.isPaid = false : p.dataValues.isPaid = true;
             });
         }
         this.res.json(payment);
