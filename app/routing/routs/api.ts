@@ -5,6 +5,7 @@ import reservations from './api/reservation';
 import priceList from './api/priceList';
 import serviceList from './api/services';
 import history from './api/history';
+import debtor from './api/debtor';
 
 const api = [
     authorization,
@@ -13,6 +14,7 @@ const api = [
     reservations,
     priceList,
     serviceList,
-    history
+    history,
+    debtor
 ];
 export default api;

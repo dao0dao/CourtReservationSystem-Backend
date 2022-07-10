@@ -1,9 +1,8 @@
 import { NextFunction, Response } from 'express';
-import { PlayerSQL, PlayerError, Player, Week, OpponentSQL, PlayerIncludedSQL } from '../interfaces/players_interfaces';
+import { PlayerSQL, PlayerError, Player, Week, OpponentSQL } from '../interfaces/players_interfaces';
 import Request from '../interfaces/request_interfaces';
 import Players from '../../models/players';
 import Opponents from '../../models/opponents';
-import PriceListModel from '../../models/priceList';
 import Account from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
 const { validationResult } = require('express-validator');
