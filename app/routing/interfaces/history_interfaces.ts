@@ -15,3 +15,10 @@ export interface BalancePayment {
     playerId: string;
     method: 'payment' | 'cash' | 'transfer' | 'debet';
 }
+export interface Payment {
+    historyId: string;
+    playerId: string;
+    price: number | string;
+    service: string;
+    method: 'payment' | 'cash' | 'transfer';
+}

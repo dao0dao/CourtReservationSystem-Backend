@@ -5,7 +5,7 @@ const { validationResult } = require('express-validator');
 import PaymentsHistoryModel from '../../models/paymentHistory';
 import AccountModel from '../../models/account';
 import { Op } from 'sequelize';
-import { BalancePayment } from '../interfaces/history_interfaces';
+import { Payment, } from '../interfaces/history_interfaces';
 
 export default class HistoryController {
     private req: Request;
@@ -39,12 +39,15 @@ export default class HistoryController {
         const playerId = this.req.query.playerId;
         const dateFrom = this.req.query.dateFrom;
         const dateTo: string = this.req.query.dateTo?.toString()!;
+        const whereOption = {
+            createdAt: { [Op.between]: [dateFrom, dateTo] },
+        };
+        if (playerId !== 'undefined') {
+            whereOption['playerId'] = playerId;
+        }
         const payment = await PaymentsHistoryModel.findAll({
-            where: {
-                playerId: playerId,
-                createdAt: { [Op.between]: [dateFrom, dateTo] },
-            },
-            attributes: ['id', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid']]
+            where: whereOption,
+            attributes: ['id', 'playerId', 'playerName', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid']]
         })
             .catch(err => { if (err) { return databaseFailed(this.res); } });
         if (payment.length) {
@@ -54,6 +57,51 @@ export default class HistoryController {
             });
         }
         this.res.json(payment);
+    }
+
+    async historyPayment() {
+        if (!this.req.user && !this.errors.isEmpty()) {
+            return unauthorized(this.res);
+        }
+        const data: Payment = this.req.body;
+        const today = new Date().getTime();
+        const payment = await PaymentsHistoryModel.findOne({
+            where: {
+                id: data.historyId,
+                playerId: data.playerId,
+                value: data.price,
+                serviceName: data.service,
+                isPayed: false
+            }
+        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        if (!payment) {
+            return notAcceptable(this.res, 'Wpis nie istniej, przeładuj stronę i spróbuj jeszcze raz');
+        }
+        const date = payment.createdAt.toLocaleDateString().slice(0, 10);
+        const paymentDate = new Date(date).getTime();
+        if ((paymentDate < today && !this.req.user.isAdmin)) {
+            return notAcceptable(this.res, 'Brak uprawnień');
+        }
+        if (data.method === 'payment') {
+            const account = await AccountModel.findOne({
+                where: {
+                    playerId: data.playerId
+                }
+            }).catch(err => { if (err) { return databaseFailed(this.res); } });
+            const accountBefore = parseFloat(account.account);
+            const accountAfter = accountBefore - parseFloat((data.price).toString());
+            account.set({
+                account: accountAfter
+            });
+            await account.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+        }
+        payment.set({
+            isPayed: true,
+            cashier: this.req.user.name,
+            paymentMethod: data.method
+        });
+        await payment.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+        this.res.json({ update: true });
     }
 
 }

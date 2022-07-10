@@ -25,4 +25,15 @@ router.get('/price/balance/history', [
     (req: Request, res: Response, next: NextFunction) => new HistoryController(req, res, next).getPlayerHistory()
 );
 
+router.post('/price/balance/payment', [
+    cookie('sid_').escape(),
+    body('historyId').escape(),
+    body('playerId').escape(),
+    body('price').escape(),
+    body('service').escape()
+],
+    putUser,
+    (req: Request, res: Response, next: NextFunction) => new HistoryController(req, res, next).historyPayment()
+);
+
 export default router;
