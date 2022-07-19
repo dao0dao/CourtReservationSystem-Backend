@@ -73,10 +73,10 @@ export default class Timetable {
             form?.timeFrom !== undefined ? reservation.set({ timeFrom: form?.timeFrom }) : null;
             form?.timeTo !== undefined ? reservation.set({ timeTo: form?.timeTo }) : null;
             form?.court !== undefined ? reservation.set({ court: form?.court }) : null;
-            form?.playerOneId !== undefined ? reservation.set({ playerOneId: form?.playerOneId }) : null;
-            form?.playerTwoId !== undefined ? reservation.set({ playerTwoId: form?.playerTwoId }) : null;
-            form?.guestOne !== undefined ? reservation.set({ guestOne: form?.guestOne }) : null;
-            form?.guestTwo !== undefined ? reservation.set({ guestTwo: form?.guestTwo }) : null;
+            form?.playerOneId !== undefined ? reservation.set({ playerOneId: form?.playerOneId }) : reservation.set({ playerOneId: '' });
+            form?.playerTwoId !== undefined ? reservation.set({ playerTwoId: form?.playerTwoId }) : reservation.set({ playerTwoId: '' });
+            form?.guestOne !== undefined ? reservation.set({ guestOne: form?.guestOne }) : reservation.set({ guestOne: '' });
+            form?.guestTwo !== undefined ? reservation.set({ guestTwo: form?.guestTwo }) : reservation.set({ guestTwo: '' });
 
             payment?.hourCount !== undefined ? reservation.set({ hourCount: payment?.hourCount }) : null;
 
