@@ -45,6 +45,10 @@ const PaymentsHistory = sequelize.define('paymentsHistory', {
         allowNull: false,
         defaultValue: true
     },
+    gameId: {
+        type: Sequelize.DataTypes.UUID,
+        allowNull: true
+    },
 
 });
 sequelize.createSchema('paymentsHistory', { ifNotExists: true });
