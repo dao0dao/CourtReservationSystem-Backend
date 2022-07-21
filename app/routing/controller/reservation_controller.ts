@@ -2,11 +2,14 @@ import { NextFunction, Response } from 'express';
 import Request from '../interfaces/request_interfaces';
 const { validationResult } = require('express-validator');
 import ReservationModel from '../../models/reservation';
-import Players from '../../models/players';
+import PaymentsHistoryModel from '../../models/paymentHistory';
 import Opponents from '../../models/opponents';
+import PlayersModel from '../../models/players';
+import AccountModel from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
-import { createReservationResponse, Reservation, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
-import { PlayerSQL, Player } from '../interfaces/players_interfaces';
+import { createReservationResponse, Reservation, ReservationPayment, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
+import { PlayerSQL, Player, AccountSql } from '../interfaces/players_interfaces';
+import { PaymentHistorySQL } from '../interfaces/history_interfaces';
 
 export default class Timetable {
     private req: Request;
@@ -19,76 +22,6 @@ export default class Timetable {
         this.next = next;
         this.errors = validationResult(this.req);
     }
-
-    /* Funkcje pomocnicze */
-
-    private getToday(): string {
-        const year = new Date().getFullYear();
-        let month = new Date().getMonth() + 1;
-        let monthString: string = '';
-        if (month < 10) {
-            monthString = '0' + month;
-        } else {
-            monthString = month.toString();
-        }
-        const day = new Date().getDate();
-        return (year + '-' + monthString + '-' + day);
-    }
-
-    private async getAllPlayers(): Promise<Player[]> {
-        const allPlayers: Player[] = [];
-        const players: PlayerSQL[] = await Players.findAll({
-            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'racquet', 'weeks', 'notes'],
-            include: [
-                { model: Opponents, attributes: [['opponentId', 'id']] }
-            ]
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
-        players.forEach((pl: PlayerSQL) => {
-            const { id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents } = pl;
-            const save = () => { };
-            const newPlayer: Player = {
-                id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents: [], save
-            };
-            opponents.forEach(el => {
-                const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));
-                if (op) {
-                    newPlayer.opponents.push({ id: op.id, name: op.name, surname: op.surname });
-                }
-            });
-            allPlayers.push(newPlayer);
-        });
-        return allPlayers;
-    }
-
-    private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
-        const reservation = await ReservationModel.findOne({ where: { id: input.id } });
-        if (reservation) {
-            const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed } = input;
-            timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
-            timetable?.transformX !== undefined ? reservation.set({ transformX: timetable?.transformX }) : null;
-            timetable?.transformY !== undefined ? reservation.set({ transformY: timetable?.transformY }) : null;
-            timetable?.zIndex !== undefined ? reservation.set({ zIndex: timetable?.zIndex }) : null;
-
-            form?.date !== undefined ? reservation.set({ date: form?.date }) : null;
-            form?.timeFrom !== undefined ? reservation.set({ timeFrom: form?.timeFrom }) : null;
-            form?.timeTo !== undefined ? reservation.set({ timeTo: form?.timeTo }) : null;
-            form?.court !== undefined ? reservation.set({ court: form?.court }) : null;
-            form?.playerOneId !== undefined ? reservation.set({ playerOneId: form?.playerOneId }) : reservation.set({ playerOneId: '' });
-            form?.playerTwoId !== undefined ? reservation.set({ playerTwoId: form?.playerTwoId }) : reservation.set({ playerTwoId: '' });
-            form?.guestOne !== undefined ? reservation.set({ guestOne: form?.guestOne }) : reservation.set({ guestOne: '' });
-            form?.guestTwo !== undefined ? reservation.set({ guestTwo: form?.guestTwo }) : reservation.set({ guestTwo: '' });
-
-            payment?.hourCount !== undefined ? reservation.set({ hourCount: payment?.hourCount }) : null;
-
-            isPlayerOnePayed !== undefined ? reservation.set({ isPlayerOnePayed }) : null;
-            isPlayerTwoPayed !== undefined ? reservation.set({ isPlayerTwoPayed }) : null;
-
-            await reservation.save().catch(err => { if (err) { return databaseFailed(this.res); } });
-            return true;
-        }
-        return false;
-    }
-
     /* Funkcje obsługujące zapytanie */
 
     async getReservationsFromDate() {
@@ -216,4 +149,146 @@ export default class Timetable {
         await reservation.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
         return this.res.status(202).json({ deleted: true });
     }
+
+    async payForReservations() {
+        if (!this.req.user) {
+            return unauthorized(this.res);
+        }
+        if (!this.errors.isEmpty()) {
+            return notAcceptable(this.res, 'Błędne dane');
+        }
+        const data: ReservationPayment = this.req.body;
+        const reservation: ReservationSQL = await ReservationModel.findOne({ where: { id: data.reservationId } })
+            .catch(err => { if (err) { return databaseFailed(this.res); } });
+        const paymentHistory: PaymentHistorySQL[] = await PaymentsHistoryModel.findAll({ where: { gameId: reservation.id } })
+            .catch(err => { if (err) { return databaseFailed(this.res); } });
+        const playerOne: PlayerSQL = await PlayersModel.findOne({ where: { id: data.playerOne?.id } })
+            .catch(err => { if (err) { return databaseFailed(this.res); } });
+        let accountOne: AccountSql | undefined;
+        if (playerOne) {
+            accountOne = await AccountModel.findOne({ where: { playerId: playerOne.id } })
+                .catch(err => { if (err) { return databaseFailed(this.res); } });
+        }
+        const playerTwo: PlayerSQL = await PlayersModel.findOne({ where: { id: data.playerTwo?.id } })
+            .catch(err => { if (err) { return databaseFailed(this.res); } });
+        let accountTwo: AccountSql | undefined;
+        if (playerTwo) {
+            accountTwo = await AccountModel.findOne({ where: { playerId: playerTwo.id } });
+        }
+        const today: number = new Date(this.getToday()).getTime();
+        const reservationDay: number = new Date(reservation.form.date).getTime();
+        const dateSubtract: number = today - reservationDay;
+        if (!this.req.user.isAdmin && dateSubtract > 0) {
+            return notAcceptable(this.res, 'Brak uprawnień');
+        }
+        if (!reservation) {
+            return notAcceptable(this.res, 'Brak rezerwacji w bazie danych');
+        }
+        if (paymentHistory.length === 0) {
+            // Tworzenie nowej płatności
+            await this.createPaymentHistory(data, reservation, playerOne, playerTwo, accountOne, accountTwo);
+        }
+    }
+
+    /* Funkcje pomocnicze */
+
+    private async createPaymentHistory(
+        data: ReservationPayment,
+        reservationModel: ReservationSQL,
+        playerOneModel: PlayerSQL,
+        playerTwoModel: PlayerSQL,
+        accountOne: AccountSql | undefined,
+        accountTwo: AccountSql | undefined,
+    ) {
+        if (data.playerOne) {
+            if (playerOneModel) {
+                // stwórz płatność dla gracza w bazie
+                const isPayed = data.playerOne.method === 'debet' ? false : true;
+                const payment = PaymentsHistoryModel.create({
+                    paymentMethod: data.playerOne.method,
+                    value: data.playerOne.value,
+                    playerId: data.playerOne.id,
+                    playerName: data.playerOne.name,
+                    serviceName: data.playerOne.serviceName,
+                    accountBefore: accountOne?.account,
+                    accountAfter: accountOne?.account,
+                    cashier: this.req.user.name,
+                    isPayed: isPayed,
+                    gameId: data.reservationId
+                });
+                await payment.save()
+                    .catch(err => { if (err) { return databaseFailed(this.res); } });
+            } else {
+
+            }
+        }
+    }
+
+    private getToday(): string {
+        const year = new Date().getFullYear();
+        let month = new Date().getMonth() + 1;
+        let monthString: string = '';
+        if (month < 10) {
+            monthString = '0' + month;
+        } else {
+            monthString = month.toString();
+        }
+        const day = new Date().getDate();
+        return (year + '-' + monthString + '-' + day);
+    }
+
+    private async getAllPlayers(): Promise<Player[]> {
+        const allPlayers: Player[] = [];
+        const players: PlayerSQL[] = await PlayersModel.findAll({
+            attributes: ['id', 'name', 'surname', 'telephone', 'email', 'court', 'stringsName', 'tension', 'racquet', 'weeks', 'notes'],
+            include: [
+                { model: Opponents, attributes: [['opponentId', 'id']] }
+            ]
+        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        players.forEach((pl: PlayerSQL) => {
+            const { id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents } = pl;
+            const save = () => { };
+            const newPlayer: Player = {
+                id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents: [], save
+            };
+            opponents.forEach(el => {
+                const op: PlayerSQL | undefined = players.find(p => (p.id === el.id));
+                if (op) {
+                    newPlayer.opponents.push({ id: op.id, name: op.name, surname: op.surname });
+                }
+            });
+            allPlayers.push(newPlayer);
+        });
+        return allPlayers;
+    }
+
+    private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
+        const reservation = await ReservationModel.findOne({ where: { id: input.id } });
+        if (reservation) {
+            const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed } = input;
+            timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
+            timetable?.transformX !== undefined ? reservation.set({ transformX: timetable?.transformX }) : null;
+            timetable?.transformY !== undefined ? reservation.set({ transformY: timetable?.transformY }) : null;
+            timetable?.zIndex !== undefined ? reservation.set({ zIndex: timetable?.zIndex }) : null;
+
+            form?.date !== undefined ? reservation.set({ date: form?.date }) : null;
+            form?.timeFrom !== undefined ? reservation.set({ timeFrom: form?.timeFrom }) : null;
+            form?.timeTo !== undefined ? reservation.set({ timeTo: form?.timeTo }) : null;
+            form?.court !== undefined ? reservation.set({ court: form?.court }) : null;
+            form?.playerOneId !== undefined ? reservation.set({ playerOneId: form?.playerOneId }) : reservation.set({ playerOneId: '' });
+            form?.playerTwoId !== undefined ? reservation.set({ playerTwoId: form?.playerTwoId }) : reservation.set({ playerTwoId: '' });
+            form?.guestOne !== undefined ? reservation.set({ guestOne: form?.guestOne }) : reservation.set({ guestOne: '' });
+            form?.guestTwo !== undefined ? reservation.set({ guestTwo: form?.guestTwo }) : reservation.set({ guestTwo: '' });
+
+            payment?.hourCount !== undefined ? reservation.set({ hourCount: payment?.hourCount }) : null;
+
+            isPlayerOnePayed !== undefined ? reservation.set({ isPlayerOnePayed }) : null;
+            isPlayerTwoPayed !== undefined ? reservation.set({ isPlayerTwoPayed }) : null;
+
+            await reservation.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+            return true;
+        }
+        return false;
+    }
+
 }

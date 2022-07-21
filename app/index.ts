@@ -17,13 +17,10 @@ import appDir, { PublicFiles } from './utils/appDir';
 import rootRout from './routing/routs/root';
 import apiRouts from './routing/routs/api';
 // Modele tabel
-import Coaches from './models/admin';
 import Players from './models/players';
 import Opponents from './models/opponents';
 import Account from './models/account';
-import Payments from './models/payments';
-import PriceList from './models/priceList';
-
+ 
 import { writeUnhandledErrorToLog } from './error_to_log';
 import { clearSessionFolder } from './utils/handleSession';
 
@@ -65,9 +62,7 @@ const connectToBase = () => {
         });
 };
 
-Coaches.hasMany(Payments, { as: 'coachesId', onDelete: 'NO ACTION' });
 Players.hasOne(Account, { onDelete: 'CASCADE' });
-Players.hasMany(Payments, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
 // Players.belongsTo(PriceList, { onDelete: 'SET NULL', allowNull: true });
 

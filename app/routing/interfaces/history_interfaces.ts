@@ -10,6 +10,22 @@ export interface Balance {
     cashier: string;
 }
 
+export interface PaymentHistorySQL {
+    id?: string;
+    paymentMethod: 'payment' | 'cash' | 'transfer' | 'debet' | 'charge';
+    value: string;
+    playerId: string;
+    playerName: string;
+    serviceName: string;
+    accountBefore: number;
+    accountAfter: number;
+    cashier: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    isPayed: boolean;
+    gameId?: string
+}
+
 export interface BalancePayment {
     id: string;
     playerId: string;

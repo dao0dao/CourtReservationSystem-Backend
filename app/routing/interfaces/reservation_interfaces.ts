@@ -39,3 +39,19 @@ export interface createReservationResponse {
     status: 'added';
     id: string;
 }
+
+export interface PlayerPayment {
+    id?: string;
+    name: string;
+    method: 'payment' | 'cash' | 'transfer' | 'debet';
+    value: number;
+    serviceName: string;
+}
+
+export type Method = PlayerPayment['method'];
+
+export interface ReservationPayment {
+    playerOne?: PlayerPayment;
+    playerTwo?: PlayerPayment;
+    reservationId: string;
+}
