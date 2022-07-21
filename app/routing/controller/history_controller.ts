@@ -25,7 +25,7 @@ export default class HistoryController {
         }
         const playerId = this.req.query.playerId;
         const account = await AccountModel.findOne({ where: { playerId } })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (!account) {
             return notAcceptable(this.res, 'Brak takiego konta');
         }
@@ -49,7 +49,7 @@ export default class HistoryController {
             where: whereOption,
             attributes: ['id', 'playerId', 'playerName', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid']]
         })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (payment.length) {
             payment.forEach(p => {
                 p.dataValues.date = new Date(p.dataValues.date).toLocaleDateString();
@@ -73,7 +73,7 @@ export default class HistoryController {
                 serviceName: data.service,
                 isPayed: false
             }
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (!payment) {
             return notAcceptable(this.res, 'Wpis nie istniej, przeładuj stronę i spróbuj jeszcze raz');
         }
@@ -87,20 +87,20 @@ export default class HistoryController {
                 where: {
                     playerId: data.playerId
                 }
-            }).catch(err => { if (err) { return databaseFailed(this.res); } });
+            }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
             const accountBefore = parseFloat(account.account);
             const accountAfter = accountBefore - parseFloat((data.price).toString());
             account.set({
                 account: accountAfter
             });
-            await account.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+            await account.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         }
         payment.set({
             isPayed: true,
             cashier: this.req.user.name,
             paymentMethod: data.method
         });
-        await payment.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+        await payment.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         this.res.json({ update: true });
     }
 

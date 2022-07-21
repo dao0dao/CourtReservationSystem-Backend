@@ -143,14 +143,14 @@ export default class User {
         if (samePlayer) {
             return this.res.status(400).json({ alreadyExist: true });
         }
-        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, racquet, notes }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, racquet, notes }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
                 const el = opponents[i];
-                await Opponents.create({ playerId: newPlayer.id, opponentId: el.id }).catch(err => { if (err) { return databaseFailed(this.res); } });
+                await Opponents.create({ playerId: newPlayer.id, opponentId: el.id }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
             }
         }
-        await Account.create({ playerId: newPlayer.id, account, }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        await Account.create({ playerId: newPlayer.id, account, }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.json({ player: 'created', id: newPlayer.id });
     }
 
@@ -164,7 +164,7 @@ export default class User {
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] },
             ]
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         players.forEach((pl: PlayerSQL) => {
             const save = () => { };
             const { id, name, surname, telephone, email, court, stringsName, tension, racquet, weeks, notes, account, opponents, priceListId } = pl;
@@ -234,7 +234,7 @@ export default class User {
             .then(() => {
                 return this.res.json({ updated: true });
             })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
     }
 
     async deletePlayer() {
@@ -249,7 +249,7 @@ export default class User {
         if (!player) {
             return this.res.status(400).json({ deletedPlayer: true });
         }
-        await player.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
+        await player.destroy().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.json({ deletedPlayer: true });
     }
 } 

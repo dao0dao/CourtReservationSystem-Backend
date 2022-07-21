@@ -25,7 +25,7 @@ export default class PriceListController {
         }
         const priceList = await PriceListModel.findAll({
             attributes: ['id', 'name', 'hours']
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         this.res.json(priceList);
     }
 
@@ -45,7 +45,7 @@ export default class PriceListController {
         }
         const priceList: PriceList = await PriceListModel.create({
             name, hours
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         this.res.json({ status: 201, id: priceList.id });
     }
 
@@ -60,12 +60,12 @@ export default class PriceListController {
         const priceList: PriceList = await PriceListModel.findOne({
             where: { id },
             attributes: ['id', 'name', 'hours']
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const existedPriceList: PriceList[] = await PriceListModel.findAll({
             where: {
                 name
             }
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         let isExist: boolean = false;
         for (let i = 0; i < existedPriceList.length; i++) {
             if (priceList.id !== existedPriceList[i].id) {
@@ -92,7 +92,7 @@ export default class PriceListController {
         const id = this.req.params.id;
         const priceList: PriceList = await PriceListModel.findOne({
             where: { id }
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (priceList) {
             priceList.destroy();
             Players.findAll({

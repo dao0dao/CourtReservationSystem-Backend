@@ -54,7 +54,20 @@ router.put('/reservation', [
 
 router.delete('/reservation/:id', [
     cookie('sid_').escape()
-], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).deleteReservation(); }
-);
+], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).deleteReservation(); });
+
+router.put('/reservation/payment', [
+    cookie('sid_').escape(),
+    check('playerOne.id').escape(),
+    check('playerOne.method').escape(),
+    check('playerOne.name').escape(),
+    check('playerOne.serviceName').escape(),
+    check('playerOne.value').escape(),
+    check('playerTwo.id').escape(),
+    check('playerTwo.method').escape(),
+    check('playerTwo.name').escape(),
+    check('playerTwo.serviceName').escape(),
+    check('playerTwo.value').escape(),
+], putUser, (req: Request, res: Response, next: NextFunction) => { return new Timetable(req, res, next).payForReservations(); });
 
 export default router; 

@@ -30,7 +30,7 @@ export default class User {
         if (!this.req.user.isAdmin) {
             return notAllowed(this.res);
         }
-        const users = await Coach.findAll({ where: { isAdmin: false }, attributes: ['id', 'name', 'login'] }).catch(err => { console.log(err); if (err) { databaseFailed(this.res); } });
+        const users = await Coach.findAll({ where: { isAdmin: false }, attributes: ['id', 'name', 'login'] }).catch(err => { console.log(err); if (err) { databaseFailed(err, this.res); } });
         this.res.json({ users });
     }
 
@@ -49,10 +49,10 @@ export default class User {
             };
             return badRequest(this.res, smallErrObj);
         }
-        const user = await Coach.findOne({ where: { id: userId } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        const user = await Coach.findOne({ where: { id: userId } }).catch(err => { if (err) { databaseFailed(err, this.res); } });
         if (user) {
             if (user.login !== login) {
-                const reservedLogin = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(this.res); } });
+                const reservedLogin = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(err, this.res); } });
                 if (reservedLogin) {
                     return this.res.status(400).json({ reservedLogin: true });
                 } else {
@@ -70,7 +70,7 @@ export default class User {
             } else if (newPassword !== confirmNewPassword && newPassword) {
                 return badRequest(this.res, { confirmNewPassword: false });
             }
-            await user.save().catch(err => { if (err) { databaseFailed(this.res); } });
+            await user.save().catch(err => { if (err) { databaseFailed(err, this.res); } });
             return this.res.json({ name, login });
         } else {
             return notAllowed(this.res);
@@ -96,7 +96,7 @@ export default class User {
             return notAllowed(this.res);
         }
         const { name, login, password, confirmPassword } = this.req.body;
-        const user = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(this.res); } });
+        const user = await Coach.findOne({ where: { login } }).catch(err => { if (err) { databaseFailed(err, this.res); } });
         if (user) {
             return this.res.status(400).json({ canNotCreateUser: true });
         }
@@ -120,8 +120,8 @@ export default class User {
             return this.res.status(400).json({ id: false });
         }
         const id = this.req.params.id;
-        const user = await Coach.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(this.res); } });
-        await user.destroy().catch(err => { if (err) { databaseFailed(this.res); } });
+        const user = await Coach.findOne({ where: { id } }).catch(err => { if (err) { databaseFailed(err, this.res); } });
+        await user.destroy().catch(err => { if (err) { databaseFailed(err, this.res); } });
         return this.res.json({ deletedUser: true });
     }
 

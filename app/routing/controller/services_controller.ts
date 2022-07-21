@@ -23,7 +23,7 @@ export default class ServiceController {
         if (!this.req.user && !this.errors.isEmpty()) {
             return unauthorized(this.res);
         }
-        const servicesSQL: Services[] = await ServicesModel.findAll().catch(err => { if (err) { return databaseFailed(this.res); } });
+        const servicesSQL: Services[] = await ServicesModel.findAll().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const services: { [key: string]: Services; } = {};
         for (let i in servicesSQL) {
             services[i] = servicesSQL[i];
@@ -41,9 +41,9 @@ export default class ServiceController {
         const services: { [key: string]: Services; } = this.req.body;
         for (let i in services) {
             if (!services[i].id) {
-                ServicesModel.create({ name: services[i].name, cost: services[i].cost }).catch(err => { if (err) { return databaseFailed(this.res); } });
+                ServicesModel.create({ name: services[i].name, cost: services[i].cost }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
             } else {
-                const service = await ServicesModel.findOne({ where: { id: services[i].id } }).catch(err => { if (err) { return databaseFailed(this.res); } });
+                const service = await ServicesModel.findOne({ where: { id: services[i].id } }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
                 service.set({ name: services[i].name, cost: services[i].cost });
                 await service.save();
             }
@@ -59,11 +59,11 @@ export default class ServiceController {
             return notAcceptable(this.res, 'Błędne dane');
         }
         const id = this.req.params.id;
-        const service = await ServicesModel.findOne({ where: { id } }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        const service = await ServicesModel.findOne({ where: { id } }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (!service) {
             return this.res.status(400).json({ deletedPlayer: true });
         }
-        await service.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
+        await service.destroy().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.json({ deletedPlayer: true });
     }
 

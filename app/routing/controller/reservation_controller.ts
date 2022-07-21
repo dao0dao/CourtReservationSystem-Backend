@@ -7,7 +7,7 @@ import Opponents from '../../models/opponents';
 import PlayersModel from '../../models/players';
 import AccountModel from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
-import { createReservationResponse, Reservation, ReservationPayment, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
+import { createReservationResponse, Reservation, ReservationDataBase, ReservationPayment, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
 import { PlayerSQL, Player, AccountSql } from '../interfaces/players_interfaces';
 import { PaymentHistorySQL } from '../interfaces/history_interfaces';
 
@@ -39,7 +39,7 @@ export default class Timetable {
                 date
             },
             attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount', 'isPlayerOnePayed', 'isPlayerTwoPayed']
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         reservationArr.forEach(r => {
             const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed } = r;
             let playerOne: Player | undefined;
@@ -92,7 +92,7 @@ export default class Timetable {
 
         const createdReservation = await ReservationModel.create({
             transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const response: createReservationResponse = {
             status: 'added',
             id: createdReservation.id
@@ -139,14 +139,14 @@ export default class Timetable {
             where: {
                 id: this.req.params.id
             }
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const today: number = new Date(this.getToday()).getTime();
         const reservationDay: number = new Date(reservation.form?.date).getTime();
         const dateSubtract: number = today - reservationDay;
         if (!this.req.user.isAdmin && dateSubtract > 0) {
             return notAcceptable(this.res, 'Brak uprawnień');
         }
-        await reservation.destroy().catch(err => { if (err) { return databaseFailed(this.res); } });
+        await reservation.destroy().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.status(202).json({ deleted: true });
     }
 
@@ -157,26 +157,28 @@ export default class Timetable {
         if (!this.errors.isEmpty()) {
             return notAcceptable(this.res, 'Błędne dane');
         }
+
         const data: ReservationPayment = this.req.body;
-        const reservation: ReservationSQL = await ReservationModel.findOne({ where: { id: data.reservationId } })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
+        const reservation: ReservationDataBase = await ReservationModel.findOne({ where: { id: data.reservationId } })
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const paymentHistory: PaymentHistorySQL[] = await PaymentsHistoryModel.findAll({ where: { gameId: reservation.id } })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const playerOne: PlayerSQL = await PlayersModel.findOne({ where: { id: data.playerOne?.id } })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
-        let accountOne: AccountSql | undefined;
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        let accountOneModel: AccountSql | undefined;
         if (playerOne) {
-            accountOne = await AccountModel.findOne({ where: { playerId: playerOne.id } })
-                .catch(err => { if (err) { return databaseFailed(this.res); } });
+            accountOneModel = await AccountModel.findOne({ where: { playerId: playerOne.id } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         }
         const playerTwo: PlayerSQL = await PlayersModel.findOne({ where: { id: data.playerTwo?.id } })
-            .catch(err => { if (err) { return databaseFailed(this.res); } });
-        let accountTwo: AccountSql | undefined;
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        let accountTwoModel: AccountSql | undefined;
         if (playerTwo) {
-            accountTwo = await AccountModel.findOne({ where: { playerId: playerTwo.id } });
+            accountTwoModel = await AccountModel.findOne({ where: { playerId: playerTwo.id } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         }
         const today: number = new Date(this.getToday()).getTime();
-        const reservationDay: number = new Date(reservation.form.date).getTime();
+        const reservationDay: number = new Date(reservation.date).getTime();
         const dateSubtract: number = today - reservationDay;
         if (!this.req.user.isAdmin && dateSubtract > 0) {
             return notAcceptable(this.res, 'Brak uprawnień');
@@ -186,7 +188,7 @@ export default class Timetable {
         }
         if (paymentHistory.length === 0) {
             // Tworzenie nowej płatności
-            await this.createPaymentHistory(data, reservation, playerOne, playerTwo, accountOne, accountTwo);
+            await this.createPaymentHistory(data, reservation, playerOne, playerTwo, accountOneModel, accountTwoModel);
         }
     }
 
@@ -194,30 +196,41 @@ export default class Timetable {
 
     private async createPaymentHistory(
         data: ReservationPayment,
-        reservationModel: ReservationSQL,
+        reservationModel: ReservationDataBase,
         playerOneModel: PlayerSQL,
         playerTwoModel: PlayerSQL,
-        accountOne: AccountSql | undefined,
-        accountTwo: AccountSql | undefined,
+        accountOneModel: AccountSql | undefined,
+        accountTwoModel: AccountSql | undefined,
     ) {
         if (data.playerOne) {
-            if (playerOneModel) {
-                // stwórz płatność dla gracza w bazie
+            if (playerOneModel && accountOneModel) {
+                // stwórz płatność dla gracza nr 1 który jest w bazie danych
                 const isPayed = data.playerOne.method === 'debet' ? false : true;
-                const payment = PaymentsHistoryModel.create({
+                let accountAfter = accountOneModel?.account!;
+                if (data.playerOne.method === 'payment') {
+                    accountAfter -= data.playerOne.value;
+                }
+                accountOneModel.update({ account: accountAfter })
+                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });;
+                await accountOneModel.save()
+                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+                const payment = await PaymentsHistoryModel.create({
                     paymentMethod: data.playerOne.method,
                     value: data.playerOne.value,
                     playerId: data.playerOne.id,
                     playerName: data.playerOne.name,
                     serviceName: data.playerOne.serviceName,
-                    accountBefore: accountOne?.account,
-                    accountAfter: accountOne?.account,
+                    accountBefore: accountOneModel?.account,
+                    accountAfter: accountOneModel?.account,
                     cashier: this.req.user.name,
                     isPayed: isPayed,
                     gameId: data.reservationId
-                });
-                await payment.save()
-                    .catch(err => { if (err) { return databaseFailed(this.res); } });
+                }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+                reservationModel.update({ isPlayerOnePayed: isPayed })
+                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+                await reservationModel.save()
+                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+                return this.res.json({ status: 'ok' });
             } else {
 
             }
@@ -244,7 +257,7 @@ export default class Timetable {
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] }
             ]
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         players.forEach((pl: PlayerSQL) => {
             const { id, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, weeks, notes, account, opponents } = pl;
             const save = () => { };
@@ -285,7 +298,7 @@ export default class Timetable {
             isPlayerOnePayed !== undefined ? reservation.set({ isPlayerOnePayed }) : null;
             isPlayerTwoPayed !== undefined ? reservation.set({ isPlayerTwoPayed }) : null;
 
-            await reservation.save().catch(err => { if (err) { return databaseFailed(this.res); } });
+            await reservation.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
             return true;
         }
         return false;

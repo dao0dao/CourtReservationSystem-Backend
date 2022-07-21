@@ -29,7 +29,7 @@ export default class DebtorController {
                 account: { [Op.lt]: 0 }
             },
             attributes: ['account', 'playerId']
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (!debtorsAccounts.length) {
             return this.res.json([]);
         }
@@ -42,7 +42,7 @@ export default class DebtorController {
                 id: { [Op.or]: playerIdArr },
             },
             attributes: ['id', 'name', 'surname', 'telephone', 'email']
-        }).catch(err => { if (err) { return databaseFailed(this.res); } });;
+        }).catch(err => { if (err) { return databaseFailed(err, this.res); } });;
         if (!playerArr.length) {
             return this.res.json([]);
         }

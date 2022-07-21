@@ -52,6 +52,8 @@ export type PlayerIncludedSQL = Omit<PlayerSQL, 'priceListId'> & { priceList: { 
 export type Player = Omit<PlayerSQL, 'opponents'> & { opponents: Opponent[]; };
 
 export interface AccountSql {
+    save();
+    update(arg0: {});
     playerId: string,
     account: number,
     priceList: string;

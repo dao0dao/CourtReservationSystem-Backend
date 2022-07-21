@@ -27,11 +27,34 @@ export interface Reservation {
     isPlayerTwoPayed: boolean;
 }
 
+export interface ReservationDataBase {
+    id?: string;
+    transformY: number;
+    transformX: number;
+    ceilHeight: number;
+    zIndex: number;
+    date: string;
+    timeFrom: string;
+    timeTo: string;
+    court: string;
+    playerOne: Player | undefined;
+    playerTwo: Player | undefined;
+    guestOne: string;
+    guestTwo: string;
+    hourCount: number;
+    isEditable?: boolean;
+    isPlayerOnePayed: boolean;
+    isPlayerTwoPayed: boolean;
+    destroy: () => Promise<any>;
+    update: (obj: {}) => Promise<any>;
+    save: () => Promise<any>;
+}
+
 export type ReservationForm = Pick<Reservation, 'form'>;
 
 export type FormSQL = Omit<Reservation['form'], 'playerOne' | 'playerTwo'> & { playerOneId: string; } & { playerTwoId: string; };
 
-export type ReservationSQL = Omit<Reservation, 'form'> & { form: FormSQL; destroy: () => Promise<any>; };
+export type ReservationSQL = Omit<Reservation, 'form'> & { form: FormSQL; destroy: () => Promise<any>; update: (arg0: {}) => Promise<any>; save: () => Promise<any>; };
 
 export type UpdateReservationSQL = Omit<Partial<ReservationSQL>, 'form'> & { form: Partial<Omit<FormSQL, 'date'>> & { date: string; }; };
 

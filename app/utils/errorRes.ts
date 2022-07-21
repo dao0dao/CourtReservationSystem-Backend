@@ -24,7 +24,8 @@ export const savedFailed = (res: Response) => {
     res.status(500).json({ database: 'fail' });
 };
 
-export const databaseFailed = (res: Response) => {
+export const databaseFailed = (err: any, res: Response) => {
+    console.log(err);
     res.status(500).json({ readWrite: 'fail' });
 };
 
