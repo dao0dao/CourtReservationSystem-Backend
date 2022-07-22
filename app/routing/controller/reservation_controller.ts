@@ -209,6 +209,7 @@ export default class Timetable {
         playerNumber: '1' | '2'
     ) {
         const isPayed = playerPayment.method === 'debet' ? false : true;
+        const gameDate = new Date(reservationModel.date);
         if (playerModel && accountModel) {
             // stwórz płatność dla gracza który jest w bazie danych
             let accountAfter = accountModel?.account!;
@@ -229,7 +230,8 @@ export default class Timetable {
                 accountAfter: accountModel?.account,
                 cashier: this.req.user.name,
                 isPayed: isPayed,
-                gameId: reservationId
+                gameId: reservationId,
+                createdAt: gameDate
             }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         } else {
             // stwórz płatność dla gracza który nie jest bazie danych
@@ -243,7 +245,8 @@ export default class Timetable {
                 accountAfter: 0,
                 cashier: this.req.user.name,
                 isPayed: isPayed,
-                gameId: reservationId
+                gameId: reservationId,
+                createdAt: gameDate
             }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         }
         if (playerNumber === '1') {
