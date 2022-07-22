@@ -18,7 +18,7 @@ const PaymentsHistory = sequelize.define('paymentsHistory', {
     },
     playerId: {
         type: Sequelize.DataTypes.UUID,
-        allowNull: false
+        allowNull: true
     },
     playerName: {
         type: Sequelize.DataTypes.STRING,

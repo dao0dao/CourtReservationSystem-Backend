@@ -7,7 +7,7 @@ import Opponents from '../../models/opponents';
 import PlayersModel from '../../models/players';
 import AccountModel from '../../models/account';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
-import { createReservationResponse, Reservation, ReservationDataBase, ReservationPayment, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
+import { createReservationResponse, PlayerPayment, Reservation, ReservationDataBase, ReservationPayment, ReservationSQL, UpdateReservationSQL } from '../interfaces/reservation_interfaces';
 import { PlayerSQL, Player, AccountSql } from '../interfaces/players_interfaces';
 import { PaymentHistorySQL } from '../interfaces/history_interfaces';
 
@@ -188,53 +188,73 @@ export default class Timetable {
         }
         if (paymentHistory.length === 0) {
             // Tworzenie nowej płatności
-            await this.createPaymentHistory(data, reservation, playerOne, playerTwo, accountOneModel, accountTwoModel);
+            if (data.playerOne) {
+                await this.createPaymentForPlayer(data.reservationId, data.playerOne, reservation, playerOne, accountOneModel, '1');
+            };
+            if (data.playerTwo) {
+                await this.createPaymentForPlayer(data.reservationId, data.playerTwo, reservation, playerTwo, accountTwoModel, '2');
+            }
         }
+        return this.res.json({ status: 'ok' });
     }
 
     /* Funkcje pomocnicze */
 
-    private async createPaymentHistory(
-        data: ReservationPayment,
+    private async createPaymentForPlayer(
+        reservationId: string,
+        playerPayment: PlayerPayment,
         reservationModel: ReservationDataBase,
-        playerOneModel: PlayerSQL,
-        playerTwoModel: PlayerSQL,
-        accountOneModel: AccountSql | undefined,
-        accountTwoModel: AccountSql | undefined,
+        playerModel: PlayerSQL,
+        accountModel: AccountSql | undefined,
+        playerNumber: '1' | '2'
     ) {
-        if (data.playerOne) {
-            if (playerOneModel && accountOneModel) {
-                // stwórz płatność dla gracza nr 1 który jest w bazie danych
-                const isPayed = data.playerOne.method === 'debet' ? false : true;
-                let accountAfter = accountOneModel?.account!;
-                if (data.playerOne.method === 'payment') {
-                    accountAfter -= data.playerOne.value;
-                }
-                accountOneModel.update({ account: accountAfter })
-                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });;
-                await accountOneModel.save()
-                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
-                const payment = await PaymentsHistoryModel.create({
-                    paymentMethod: data.playerOne.method,
-                    value: data.playerOne.value,
-                    playerId: data.playerOne.id,
-                    playerName: data.playerOne.name,
-                    serviceName: data.playerOne.serviceName,
-                    accountBefore: accountOneModel?.account,
-                    accountAfter: accountOneModel?.account,
-                    cashier: this.req.user.name,
-                    isPayed: isPayed,
-                    gameId: data.reservationId
-                }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
-                reservationModel.update({ isPlayerOnePayed: isPayed })
-                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
-                await reservationModel.save()
-                    .catch(err => { if (err) { return databaseFailed(err, this.res); } });
-                return this.res.json({ status: 'ok' });
-            } else {
-
+        const isPayed = playerPayment.method === 'debet' ? false : true;
+        if (playerModel && accountModel) {
+            // stwórz płatność dla gracza który jest w bazie danych
+            let accountAfter = accountModel?.account!;
+            if (playerPayment.method === 'payment') {
+                accountAfter -= playerPayment.value;
             }
+            accountModel.update({ account: accountAfter })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });;
+            await accountModel.save()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await PaymentsHistoryModel.create({
+                paymentMethod: playerPayment.method,
+                value: playerPayment.value,
+                playerId: playerPayment.id,
+                playerName: playerPayment.name,
+                serviceName: playerPayment.serviceName,
+                accountBefore: accountModel?.account,
+                accountAfter: accountModel?.account,
+                cashier: this.req.user.name,
+                isPayed: isPayed,
+                gameId: reservationId
+            }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+        } else {
+            // stwórz płatność dla gracza który nie jest bazie danych
+            await PaymentsHistoryModel.create({
+                paymentMethod: playerPayment.method,
+                value: playerPayment.value,
+                playerId: '',
+                playerName: playerPayment.name,
+                serviceName: playerPayment.serviceName,
+                accountBefore: 0,
+                accountAfter: 0,
+                cashier: this.req.user.name,
+                isPayed: isPayed,
+                gameId: reservationId
+            }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         }
+        if (playerNumber === '1') {
+            await reservationModel.update({ isPlayerOnePayed: isPayed })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        } else {
+            await reservationModel.update({ isPlayerTwoPayed: isPayed })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        }
+        await reservationModel.save()
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
     }
 
     private getToday(): string {

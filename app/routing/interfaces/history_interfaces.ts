@@ -23,7 +23,7 @@ export interface PaymentHistorySQL {
     createdAt?: Date;
     updatedAt?: Date;
     isPayed: boolean;
-    gameId?: string
+    gameId?: string;
 }
 
 export interface BalancePayment {

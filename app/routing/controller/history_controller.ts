@@ -82,7 +82,7 @@ export default class HistoryController {
         if ((paymentDate < today && !this.req.user.isAdmin)) {
             return notAcceptable(this.res, 'Brak uprawnień');
         }
-        if (data.method === 'payment') {
+        if (data.method === 'payment' && data.playerId) {
             const account = await AccountModel.findOne({
                 where: {
                     playerId: data.playerId
