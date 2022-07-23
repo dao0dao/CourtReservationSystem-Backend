@@ -1,12 +1,16 @@
 import { NextFunction, Response } from 'express';
 import { PlayerSQL, PlayerError, Player, Week, OpponentSQL } from '../interfaces/players_interfaces';
 import Request from '../interfaces/request_interfaces';
-import Players from '../../models/players';
+import PlayersModel from '../../models/players';
 import Opponents from '../../models/opponents';
-import Account from '../../models/account';
+import AccountModel from '../../models/account';
+import ReservationModel from '../../models/reservation';
+import PaymentsHistoryModel from '../../models/paymentHistory';
 import { badRequest, databaseFailed, notAcceptable, notAllowed, unauthorized } from '../../utils/errorRes';
 const { validationResult } = require('express-validator');
 import sequelize from 'sequelize';
+import { ReservationDataBase } from '../interfaces/reservation_interfaces';
+import { PaymentHistorySQL } from '../interfaces/history_interfaces';
 
 
 export default class User {
@@ -126,7 +130,7 @@ export default class User {
             return badRequest(this.res, error);
         }
         const { name, surname, telephone, email, opponents, weeks, account, priceListId, court, stringsName, tension, racquet, notes } = player;
-        const isExist = await Players.findOne({
+        const isExist = await PlayersModel.findOne({
             where: {
                 name, surname
             }
@@ -134,7 +138,7 @@ export default class User {
         if (isExist) {
             return notAcceptable(this.res, 'Taki gracz istniej');
         }
-        const samePlayer = await Players.findOne({
+        const samePlayer = await PlayersModel.findOne({
             where: {
                 name,
                 surname
@@ -143,14 +147,14 @@ export default class User {
         if (samePlayer) {
             return this.res.status(400).json({ alreadyExist: true });
         }
-        const newPlayer = await Players.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, racquet, notes }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        const newPlayer = await PlayersModel.create({ name, surname, telephone, email, weeks, account, priceListId, court, stringsName, tension, racquet, notes }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (opponents.length) {
             for (let i = 0; i < opponents.length; i++) {
                 const el = opponents[i];
                 await Opponents.create({ playerId: newPlayer.id, opponentId: el.id }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
             }
         }
-        await Account.create({ playerId: newPlayer.id, account, }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        await AccountModel.create({ playerId: newPlayer.id, account, }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.json({ player: 'created', id: newPlayer.id });
     }
 
@@ -159,7 +163,7 @@ export default class User {
             return unauthorized(this.res);
         }
         const allPlayers: Player[] = [];
-        const players: PlayerSQL[] = await Players.findAll({
+        const players: PlayerSQL[] = await PlayersModel.findAll({
             attributes: ['id', 'name', 'surname', 'telephone', 'email', 'priceListId', 'court', 'stringsName', 'tension', 'racquet', 'weeks', 'notes'],
             include: [
                 { model: Opponents, attributes: [['opponentId', 'id']] },
@@ -200,8 +204,8 @@ export default class User {
             return badRequest(this.res, error);
         }
         const { id, weeks, opponents, name, surname, telephone, email, priceListId, court, stringsName, tension, racquet, notes }: PlayerSQL = this.req.body;
-        const player = await Players.findOne({ where: { id } });
-        const samePlayer = await Players.findOne({
+        const player = await PlayersModel.findOne({ where: { id } });
+        const samePlayer = await PlayersModel.findOne({
             where: {
                 id: { [sequelize.Op.not]: id },
                 name,
@@ -245,10 +249,28 @@ export default class User {
             return this.res.status(400).json({ badRequest: true });
         }
         const id = this.req.params.id;
-        const player = await Players.findOne({ where: { id } });
+        const player = await PlayersModel.findOne({ where: { id } });
         if (!player) {
             return this.res.status(400).json({ deletedPlayer: true });
         }
+        const reser1: ReservationDataBase[] = await ReservationModel.findAll({ where: { playerOneId: id } })
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        reser1.forEach(async r => {
+            r.set({ playerOneId: '', guestOne: '--Gracz usunięty z bazy--' });
+            await r.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        });
+        const reser2: ReservationDataBase[] = await ReservationModel.findAll({ where: { playerTwoId: id } })
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        reser2.forEach(async r => {
+            r.set({ playerTwoId: '', guestTwo: '--Gracz usunięty z bazy--' });
+            await r.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        });
+        const paymentHistory: PaymentHistorySQL[] = await PaymentsHistoryModel.findAll({ where: { playerId: id } })
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        paymentHistory.forEach(async p => {
+            p.set({ playerId: '', playerName: '--Gracz usunięty z bazy--' });
+            await p.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        });
         await player.destroy().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.json({ deletedPlayer: true });
     }
