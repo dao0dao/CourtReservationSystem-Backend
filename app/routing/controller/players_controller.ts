@@ -240,7 +240,6 @@ export default class User {
             })
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
     }
-
     async deletePlayer() {
         if (!this.req.user.isAdmin) {
             return notAllowed(this.res);
