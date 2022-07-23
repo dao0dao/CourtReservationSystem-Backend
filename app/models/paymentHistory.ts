@@ -47,7 +47,8 @@ const PaymentsHistory = sequelize.define('paymentsHistory', {
     },
     gameId: {
         type: Sequelize.DataTypes.UUID,
-        allowNull: true
+        allowNull: true,
+        defaultValue: false
     },
 
 });
