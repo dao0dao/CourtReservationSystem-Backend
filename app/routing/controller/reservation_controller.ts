@@ -38,10 +38,10 @@ export default class Timetable {
             where: {
                 date
             },
-            attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount', 'isPlayerOnePayed', 'isPlayerTwoPayed']
+            attributes: ['id', 'transformX', 'transformY', 'ceilHeight', 'zIndex', 'date', 'timeFrom', 'timeTo', 'court', 'playerOneId', 'playerTwoId', 'guestOne', 'guestTwo', 'hourCount', 'isPlayerOnePayed', 'isPlayerTwoPayed', 'isFirstPayment']
         }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         reservationArr.forEach(r => {
-            const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed } = r;
+            const { id, transformX, transformY, ceilHeight, zIndex, date, timeFrom, timeTo, court, playerOneId, playerTwoId, guestOne, guestTwo, hourCount, isPlayerOnePayed, isPlayerTwoPayed, isFirstPayment } = r;
             let playerOne: Player | undefined;
             let playerTwo: Player | undefined;
             if (playerOneId) {
@@ -62,7 +62,8 @@ export default class Timetable {
                     hourCount
                 },
                 isPlayerOnePayed,
-                isPlayerTwoPayed
+                isPlayerTwoPayed,
+                isFirstPayment: isFirstPayment
             };
             allReservations.push(reservation);
         });
@@ -125,10 +126,10 @@ export default class Timetable {
             }
         }
         const result = await this.updateFields(reservation);
-        if (result) {
+        if (result.updated) {
             return this.res.status(202).json({ updated: true });
         }
-        return notAcceptable(this.res, 'Błędne dane');
+        return notAcceptable(this.res, result.reason);
     }
 
     async deleteReservation() {
@@ -164,6 +165,9 @@ export default class Timetable {
         const data: ReservationPayment = this.req.body;
         const reservation: ReservationDataBase = await ReservationModel.findOne({ where: { id: data.reservationId } })
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        if (reservation.court == '3') {
+            return notAcceptable(this.res, 'Brak opłat z rezerwowych');
+        }
         const paymentHistory: PaymentHistorySQL[] = await PaymentsHistoryModel.findAll({ where: { gameId: reservation.id } })
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const playerOne: PlayerSQL = await PlayersModel.findOne({ where: { id: data.playerOne?.id } })
@@ -296,12 +300,11 @@ export default class Timetable {
                 .catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         }
         if (playerNumber === '1') {
-            await reservationModel.update({ isPlayerOnePayed: isPayed })
-                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            reservationModel.set({ isPlayerOnePayed: isPayed });
         } else {
-            await reservationModel.update({ isPlayerTwoPayed: isPayed })
-                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            reservationModel.set({ isPlayerTwoPayed: isPayed });
         }
+        reservationModel.set({ isFirstPayment: true });
         await reservationModel.save()
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
     }
@@ -319,6 +322,7 @@ export default class Timetable {
         const gameDate = new Date(reservationModel.date);
         if (playerModel && accountModel) {
             // stwórz płatność dla gracza który jest w bazie danych
+            const accountBefore = accountModel.account;
             let accountAfter = accountModel?.account!;
             if (playerPayment.method === 'payment') {
                 accountAfter -= playerPayment.value;
@@ -333,7 +337,7 @@ export default class Timetable {
                 playerId: playerPayment.id,
                 playerName: playerPayment.name,
                 serviceName: playerPayment.serviceName,
-                accountBefore: accountModel?.account,
+                accountBefore: accountBefore,
                 accountAfter: accountModel?.account,
                 cashier: this.req.user.name,
                 isPayed: isPayed,
@@ -357,12 +361,11 @@ export default class Timetable {
             }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         }
         if (playerNumber === '1') {
-            await reservationModel.update({ isPlayerOnePayed: isPayed })
-                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            reservationModel.set({ isPlayerOnePayed: isPayed });
         } else {
-            await reservationModel.update({ isPlayerTwoPayed: isPayed })
-                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            reservationModel.set({ isPlayerTwoPayed: isPayed });
         }
+        reservationModel.set({ isFirstPayment: true });
         await reservationModel.save()
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
     }
@@ -405,8 +408,11 @@ export default class Timetable {
         return allPlayers;
     }
 
-    private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
-        const reservation = await ReservationModel.findOne({ where: { id: input.id } });
+    private async updateFields(input: UpdateReservationSQL): Promise<{ updated: boolean, reason: string; }> {
+        const reservation: ReservationDataBase = await ReservationModel.findOne({ where: { id: input.id } });
+        if (reservation.isFirstPayment) {
+            return { updated: false, reason: 'Jest płatność!' };
+        }
         if (reservation) {
             const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed, } = input;
             timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
@@ -429,9 +435,9 @@ export default class Timetable {
             isPlayerTwoPayed !== undefined ? reservation.set({ isPlayerTwoPayed }) : null;
 
             await reservation.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
-            return true;
+            return { updated: true, reason: 'ok' };
         }
-        return false;
+        return { updated: false, reason: 'Błędne dane' };
     }
 
 }

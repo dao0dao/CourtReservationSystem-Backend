@@ -72,6 +72,11 @@ const ReservationModel = sequelize.define('reservation', {
         type: Sequelize.DataTypes.BOOLEAN,
         allowNull: false
     },
+    isFirstPayment: {
+        type: Sequelize.DataTypes.BOOLEAN,
+        allowNull: true,
+    },
+
 });
 sequelize.createSchema('reservation', { ifNotExist: true });
 export default ReservationModel;

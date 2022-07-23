@@ -25,6 +25,7 @@ export interface Reservation {
     isEditable?: boolean;
     isPlayerOnePayed: boolean;
     isPlayerTwoPayed: boolean;
+    isFirstPayment?: boolean;
 }
 
 export interface ReservationDataBase {
@@ -45,8 +46,10 @@ export interface ReservationDataBase {
     isEditable?: boolean;
     isPlayerOnePayed: boolean;
     isPlayerTwoPayed: boolean;
+    isFirstPayment?: boolean;
     destroy: () => Promise<any>;
     update: (obj: {}) => Promise<any>;
+    set: (obj: {}) => Promise<any>;
     save: () => Promise<any>;
 }
 
