@@ -3,9 +3,11 @@ import { unauthorized, notAcceptable, databaseFailed } from '../../utils/errorRe
 import Request from '../interfaces/request_interfaces';
 const { validationResult } = require('express-validator');
 import PaymentsHistoryModel from '../../models/paymentHistory';
+import ReservationModel from '../../models/reservation';
 import AccountModel from '../../models/account';
 import { Op } from 'sequelize';
-import { Payment, } from '../interfaces/history_interfaces';
+import { Payment, PaymentHistorySQL, } from '../interfaces/history_interfaces';
+import { ReservationDataBase } from '../interfaces/reservation_interfaces';
 
 export default class HistoryController {
     private req: Request;
@@ -65,7 +67,7 @@ export default class HistoryController {
         }
         const data: Payment = this.req.body;
         const today = new Date().getTime();
-        const payment = await PaymentsHistoryModel.findOne({
+        const payment: PaymentHistorySQL = await PaymentsHistoryModel.findOne({
             where: {
                 id: data.historyId,
                 playerId: data.playerId,
@@ -77,7 +79,7 @@ export default class HistoryController {
         if (!payment) {
             return notAcceptable(this.res, 'Wpis nie istniej, przeładuj stronę i spróbuj jeszcze raz');
         }
-        const date = payment.createdAt.toLocaleDateString().slice(0, 10);
+        const date = payment.createdAt!.toLocaleDateString().slice(0, 10);
         const paymentDate = new Date(date).getTime();
         if ((paymentDate < today && !this.req.user.isAdmin)) {
             return notAcceptable(this.res, 'Brak uprawnień');
@@ -87,7 +89,8 @@ export default class HistoryController {
                 where: {
                     playerId: data.playerId
                 }
-            }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
             const accountBefore = parseFloat(account.account);
             const accountAfter = accountBefore - parseFloat((data.price).toString());
             account.set({
@@ -101,6 +104,18 @@ export default class HistoryController {
             paymentMethod: data.method
         });
         await payment.save().catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        if (payment.gameId) {
+            const reservation: ReservationDataBase = await ReservationModel.findOne({ where: { id: payment.gameId } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            if (payment.playerId) {
+                reservation.playerOneId === payment.playerId ? reservation.set({ isPlayerOnePayed: true }) : null;
+                reservation.playerTwoId === payment.playerId ? reservation.set({ isPlayerTwoPayed: true }) : null;
+            } else if (payment.playerName && !payment.playerId) {
+                reservation.guestOne === payment.playerName ? reservation.set({ isPlayerOnePayed: true }) : null;
+                reservation.guestTwo === payment.playerName ? reservation.set({ isPlayerTwoPayed: true }) : null;
+            }
+            await reservation.save();
+        }
         this.res.json({ update: true });
     }
 

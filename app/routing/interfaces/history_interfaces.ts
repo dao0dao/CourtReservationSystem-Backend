@@ -26,6 +26,7 @@ export interface PaymentHistorySQL {
     gameId?: string;
     destroy: () => Promise<any>;
     update: (obj: {}) => Promise<any>;
+    set: (obj: {}) => Promise<any>;
     save: () => Promise<any>;
 }
 
