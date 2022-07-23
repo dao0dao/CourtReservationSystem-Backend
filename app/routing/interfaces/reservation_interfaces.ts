@@ -37,10 +37,10 @@ export interface ReservationDataBase {
     timeFrom: string;
     timeTo: string;
     court: string;
-    playerOne: Player | undefined;
-    playerTwo: Player | undefined;
-    guestOne: string;
-    guestTwo: string;
+    playerOneId: string | undefined;
+    playerTwoId: string | undefined;
+    guestOne: string | undefined;
+    guestTwo: string | undefined;
     hourCount: number;
     isEditable?: boolean;
     isPlayerOnePayed: boolean;

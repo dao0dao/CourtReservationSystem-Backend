@@ -47,7 +47,7 @@ export default class HistoryController {
         }
         const payment = await PaymentsHistoryModel.findAll({
             where: whereOption,
-            attributes: ['id', 'playerId', 'playerName', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid']]
+            attributes: ['id', 'playerId', 'playerName', ['value', 'price'], 'cashier', ['serviceName', 'service'], ['createdAt', 'date'], ['isPayed', 'isPaid'], 'gameId']
         })
             .catch(err => { if (err) { return databaseFailed(err, this.res); } });
         if (payment.length) {

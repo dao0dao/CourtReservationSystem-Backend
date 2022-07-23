@@ -135,16 +135,19 @@ export default class Timetable {
         if (!this.req.user) {
             return unauthorized(this.res);
         }
-        const reservation: ReservationSQL = await ReservationModel.findOne({
+        const reservation: ReservationDataBase = await ReservationModel.findOne({
             where: {
                 id: this.req.params.id
             }
         }).catch(err => { if (err) { return databaseFailed(err, this.res); } });
         const today: number = new Date(this.getToday()).getTime();
-        const reservationDay: number = new Date(reservation.form?.date).getTime();
+        const reservationDay: number = new Date(reservation.date).getTime();
         const dateSubtract: number = today - reservationDay;
         if (!this.req.user.isAdmin && dateSubtract > 0) {
             return notAcceptable(this.res, 'Brak uprawnień');
+        }
+        if (reservation.isPlayerOnePayed || reservation.isPlayerTwoPayed) {
+            await this.undoCharges(reservation);
         }
         await reservation.destroy().catch(err => { if (err) { return databaseFailed(err, this.res); } });
         return this.res.status(202).json({ deleted: true });
@@ -188,17 +191,121 @@ export default class Timetable {
         }
         if (paymentHistory.length === 0) {
             // Tworzenie nowej płatności
-            if (data.playerOne) {
+            if (data.playerOne?.name) {
                 await this.createPaymentForPlayer(data.reservationId, data.playerOne, reservation, playerOne, accountOneModel, '1');
             };
-            if (data.playerTwo) {
+            if (data.playerTwo?.name) {
                 await this.createPaymentForPlayer(data.reservationId, data.playerTwo, reservation, playerTwo, accountTwoModel, '2');
             }
+            return this.res.json({ payment: 'accepted' });
+        } else {
+            // Aktualizowanie płatności
+            if (data.playerOne?.name) {
+                await this.updatePaymentForPlayer(data.playerOne, reservation, playerOne, accountOneModel, '1', paymentHistory);
+            }
+            if (data.playerTwo?.name) {
+                await this.updatePaymentForPlayer(data.playerTwo, reservation, playerTwo, accountTwoModel, '2', paymentHistory);
+            }
+            return this.res.json({ payment: 'updated' });
         }
-        return this.res.json({ status: 'ok' });
     }
 
     /* Funkcje pomocnicze */
+    private async undoCharges(reservation: ReservationDataBase) {
+        if (reservation.isPlayerOnePayed && reservation.playerOneId) {
+            const historyModel: PaymentHistorySQL = await PaymentsHistoryModel.findOne({ where: { gameId: reservation.id, playerId: reservation.playerOneId } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            const accountBefore = historyModel.accountBefore;
+            const accountModel: AccountSql = await AccountModel.findOne({ where: { playerId: reservation.playerOneId } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            accountModel.update({ account: accountBefore })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            accountModel.save()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await historyModel.destroy()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        } else if (reservation.isPlayerOnePayed && reservation.guestOne) {
+            const historyModel: PaymentHistorySQL = await PaymentsHistoryModel.findOne({ where: { gameId: reservation.id, playerName: reservation.guestOne } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await historyModel.destroy()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        }
+        if (reservation.isPlayerTwoPayed && reservation.playerTwoId) {
+            const historyModel: PaymentHistorySQL = await PaymentsHistoryModel.findOne({ where: { gameId: reservation.id, playerId: reservation.playerTwoId } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            const accountBefore = historyModel.accountBefore;
+            const accountModel: AccountSql = await AccountModel.findOne({ where: { playerId: reservation.playerTwoId } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            accountModel.update({ account: accountBefore })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            accountModel.save()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await historyModel.destroy()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        } else if (reservation.isPlayerTwoPayed && reservation.guestTwo) {
+            const historyModel: PaymentHistorySQL = await PaymentsHistoryModel.findOne({ where: { gameId: reservation.id, playerName: reservation.guestTwo } })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await historyModel.destroy()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        }
+    }
+
+    private async updatePaymentForPlayer(
+        playerPayment: PlayerPayment,
+        reservationModel: ReservationDataBase,
+        playerModel: PlayerSQL,
+        accountModel: AccountSql | undefined,
+        playerNumber: '1' | '2',
+        paymentHistory: PaymentHistorySQL[]
+    ) {
+        const isPayed = playerPayment.method === 'debet' ? false : true;
+        if (playerModel && accountModel) {
+            //aktualizuj płatność dla gracza który jest w bazie danych
+            const playerHistoryModel: PaymentHistorySQL = paymentHistory.find(h => h.playerId === playerPayment.id)!;
+            const accountBefore = playerHistoryModel.accountBefore;
+            let accountAfter = accountBefore;
+            if (playerPayment.method === 'payment') {
+                accountAfter -= playerPayment.value;
+            }
+            accountModel.update({ account: accountAfter })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await accountModel.save()
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+            await playerHistoryModel.update({
+                paymentMethod: playerPayment.method,
+                value: playerPayment.value,
+                accountBefore: accountBefore,
+                accountAfter: accountAfter,
+                cashier: this.req.user.name,
+                isPayed: isPayed,
+            }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+            await playerHistoryModel.save()
+                .catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+        } else {
+            //aktualizuj płatność dla gracza który NIE jest w bazie danych
+            const playerHistoryModel: PaymentHistorySQL = paymentHistory.find(h => h.playerName === playerPayment.name && !playerPayment.id)!;
+            await playerHistoryModel.update({
+                paymentMethod: playerPayment.method,
+                value: playerPayment.value,
+                accountBefore: 0,
+                accountAfter: 0,
+                cashier: this.req.user.name,
+                isPayed: isPayed,
+            }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+            await playerHistoryModel.save()
+                .catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
+        }
+        if (playerNumber === '1') {
+            await reservationModel.update({ isPlayerOnePayed: isPayed })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        } else {
+            await reservationModel.update({ isPlayerTwoPayed: isPayed })
+                .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+        }
+        await reservationModel.save()
+            .catch(err => { if (err) { return databaseFailed(err, this.res); } });
+    }
+
 
     private async createPaymentForPlayer(
         reservationId: string,
@@ -301,7 +408,7 @@ export default class Timetable {
     private async updateFields(input: UpdateReservationSQL): Promise<boolean> {
         const reservation = await ReservationModel.findOne({ where: { id: input.id } });
         if (reservation) {
-            const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed } = input;
+            const { timetable, form, payment, isPlayerOnePayed, isPlayerTwoPayed, } = input;
             timetable?.ceilHeight !== undefined ? reservation.set({ ceilHeight: timetable?.ceilHeight }) : null;
             timetable?.transformX !== undefined ? reservation.set({ transformX: timetable?.transformX }) : null;
             timetable?.transformY !== undefined ? reservation.set({ transformY: timetable?.transformY }) : null;

@@ -24,6 +24,9 @@ export interface PaymentHistorySQL {
     updatedAt?: Date;
     isPayed: boolean;
     gameId?: string;
+    destroy: () => Promise<any>;
+    update: (obj: {}) => Promise<any>;
+    save: () => Promise<any>;
 }
 
 export interface BalancePayment {
