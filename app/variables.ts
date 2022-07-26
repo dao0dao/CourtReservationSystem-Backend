@@ -1,10 +1,10 @@
 import { env } from 'process';
 
 export const setVariables = () => {
-        env.PORT = '3000'; //port on which server will start
-        env.MYSQL_DATABASE = ""; //Data base name
-        env.MYSQL_USERNAME = ""; // user name in sql base
-        env.MYSQL_PASSWORD = ""; // user password
-        env.MYSQL_HOST = ""; //host
+        env.PORT = '3000';
+        env.MYSQL_DATABASE = ""; //Database name
+        env.MYSQL_USERNAME = ""; // user name in sql database
+        env.MYSQL_PASSWORD = ""; // user password in sql database
+        env.MYSQL_HOST = "localhost";
         env.MYSQL_DIALECT = "mysql";
 };

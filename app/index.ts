@@ -9,7 +9,7 @@ const cookieParser = require('cookie-parser');
 const { join } = require('path');
 import https from 'https';
 import http from 'http';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 // Utility
 import sequelize from './utils/database';
 import appDir, { PublicFiles } from './utils/appDir';
@@ -27,9 +27,14 @@ import { clearSessionFolder } from './utils/handleSession';
 const app = express();
 const port = process.env.PORT || 3000;
 
-const privateKey = readFileSync(join(appDir, '..', 'server.key'));
-const certificate = readFileSync(join(appDir, '..', 'server.cert'));
-
+let privateKey: any;
+let certificate: any;
+try {
+    privateKey = readFileSync(join(appDir, '..', 'server.key'));
+} catch (err) { }
+try {
+    certificate = readFileSync(join(appDir, '..', 'server.cert'));
+} catch (err) { }
 
 if (process.env.MODE === 'DEV') {
     app.use(cors({
