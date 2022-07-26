@@ -1,5 +1,6 @@
 # Jest to backendowa część projektu "Systemu rezerwacyjnego kortu".
 Dla kompletności należy pobrać jeszcze część frontendową.
+https://github.com/dao0dao/CourtReservationSystem-Frontend
 
 ## Wymagania
 1. NodeJS v16.13.1
@@ -29,6 +30,7 @@ Folder projektu <br >
 
 # It is a backend part of project: 'Tennis court reservation system'
 For the whole system you should download frontend part
+https://github.com/dao0dao/CourtReservationSystem-Frontend
 
 ## Requirements
 1. NodeJS v16.13.1
