@@ -49,7 +49,7 @@ export default class User {
                 return false;
             }
             for (let i = 0; i < weekKeys.length; i++) {
-                //testuje klucze 'day' i 'time'
+                //testing key 'day' i 'time'
                 const key = weekKeys[i];
                 const regEx = /^(days|time){1}$/;
                 if (!regEx.test(key)) {
@@ -62,20 +62,20 @@ export default class User {
                 return false;
             }
             for (let i = 0; i < dayKeys.length; i++) {
-                //sprawdzam czy propercje to numery
+                //checking if is property a number
                 const regEx = /[0-6]/;
                 const key = dayKeys[i];
                 if (!regEx.test(key)) {
                     return false;
                 }
-                //sprawdzam czy wartości propercji to 'true'
+                //checking if is value a 'true'
                 if (week.days[key] !== true) {
                     return false;
                 }
             }
             const timeKeys = Object.keys(week.time);
             for (let i = 0; i < timeKeys.length; i++) {
-                //testuje klucze 'to' i 'from'
+                //checking key 'to' and 'from'
                 const key = timeKeys[i];
                 const regEx = /^(from|to){1}$/;
                 if (!regEx.test(key)) {

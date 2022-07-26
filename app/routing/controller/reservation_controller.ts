@@ -22,7 +22,7 @@ export default class Timetable {
         this.next = next;
         this.errors = validationResult(this.req);
     }
-    /* Funkcje obsługujące zapytanie */
+    /* Functions handling requests */
 
     async getReservationsFromDate() {
         if (!this.req.user) {
@@ -194,7 +194,7 @@ export default class Timetable {
             return notAcceptable(this.res, 'Brak rezerwacji w bazie danych');
         }
         if (paymentHistory.length === 0) {
-            // Tworzenie nowej płatności
+            // Creating new payment
             if (data.playerOne?.name) {
                 await this.createPaymentForPlayer(data.reservationId, data.playerOne, reservation, playerOne, accountOneModel, '1');
             };
@@ -203,7 +203,7 @@ export default class Timetable {
             }
             return this.res.json({ payment: 'accepted' });
         } else {
-            // Aktualizowanie płatności
+            // Updating payment
             if (data.playerOne?.name) {
                 await this.updatePaymentForPlayer(data.playerOne, reservation, playerOne, accountOneModel, '1', paymentHistory);
             }
@@ -214,7 +214,7 @@ export default class Timetable {
         }
     }
 
-    /* Funkcje pomocnicze */
+    /* Auxiliary functions */
     private async undoCharges(reservation: ReservationDataBase) {
         if (reservation.isPlayerOnePayed && reservation.playerOneId) {
             const historyModel: PaymentHistorySQL = await PaymentsHistoryModel.findOne({ where: { gameId: reservation.id, playerId: reservation.playerOneId } })
@@ -264,7 +264,7 @@ export default class Timetable {
     ) {
         const isPayed = playerPayment.method === 'debet' ? false : true;
         if (playerModel && accountModel) {
-            //aktualizuj płatność dla gracza który jest w bazie danych
+            // Updating payment for player which is in base
             const playerHistoryModel: PaymentHistorySQL = paymentHistory.find(h => h.playerId === playerPayment.id)!;
             const accountBefore = playerHistoryModel.accountBefore;
             let accountAfter = accountBefore;
@@ -286,7 +286,7 @@ export default class Timetable {
             await playerHistoryModel.save()
                 .catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         } else {
-            //aktualizuj płatność dla gracza który NIE jest w bazie danych
+            // Updating payment for player which is NOT in base
             const playerHistoryModel: PaymentHistorySQL = paymentHistory.find(h => h.playerName === playerPayment.name && !playerPayment.id)!;
             await playerHistoryModel.update({
                 paymentMethod: playerPayment.method,
@@ -321,7 +321,7 @@ export default class Timetable {
         const isPayed = playerPayment.method === 'debet' ? false : true;
         const gameDate = new Date(reservationModel.date);
         if (playerModel && accountModel) {
-            // stwórz płatność dla gracza który jest w bazie danych
+            // Creating payment for player which is in base
             const accountBefore = accountModel.account;
             let accountAfter = accountModel?.account!;
             if (playerPayment.method === 'payment') {
@@ -345,7 +345,7 @@ export default class Timetable {
                 createdAt: gameDate
             }).catch(err => { if (err) { console.log(err); return databaseFailed(err, this.res); } });
         } else {
-            // stwórz płatność dla gracza który nie jest bazie danych
+            // Creating payment for player which is NOT in base
             await PaymentsHistoryModel.create({
                 paymentMethod: playerPayment.method,
                 value: playerPayment.value,

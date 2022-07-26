@@ -1,6 +1,6 @@
 import process from 'process';
 //Ustawienie zmiennych
-import { setVariables } from './varibles';
+import { setVariables } from './variables';
 setVariables();
 // Moduły
 const express = require('express');
@@ -20,7 +20,7 @@ import apiRouts from './routing/routs/api';
 import Players from './models/players';
 import Opponents from './models/opponents';
 import Account from './models/account';
- 
+
 import { writeUnhandledErrorToLog } from './error_to_log';
 import { clearSessionFolder } from './utils/handleSession';
 
@@ -64,17 +64,15 @@ const connectToBase = () => {
 
 Players.hasOne(Account, { onDelete: 'CASCADE' });
 Players.hasMany(Opponents, { onDelete: 'CASCADE' });
-// Players.belongsTo(PriceList, { onDelete: 'SET NULL', allowNull: true });
-
 writeUnhandledErrorToLog();
 
 if (process.env.MODE === 'DEV') {
-    /* Lokalny dostęp */
+    /* Handling Angular ng serve on 4200 */
     const server = http.createServer(app);
     server.listen(port, () => {
         console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
         connectToBase();
-        //czyszczenie plików sesyjnych co godzinę
+        // clearing session files every one hour
         clearSessionFolder();
         setInterval(() => {
             clearSessionFolder();
@@ -83,18 +81,18 @@ if (process.env.MODE === 'DEV') {
 }
 
 if (process.env.MODE !== 'DEV') {
-    /* Zdalny dostęp */
+    /* Run on localhost 3000 with angular production */
     const server = https.createServer({ key: privateKey, cert: certificate }, app);
     server.listen(port, () => {
         console.log(`-----Stworzono serwer na: http://localhost:${port} -----`);
         connectToBase();
-        //czyszczenie plików sesyjnych co godzinę
+        // clearing session files every one hour
         clearSessionFolder();
         setInterval(() => {
             clearSessionFolder();
         }, 60 * 60 * 1000);
     });
-    //Ponowne uruchomienie po nieobsłużonym błędzie w trybie PRODUCTION
+    /* Restarting server after unhandled crash -- only at production */
     process.on("exit", function () {
         require("child_process").spawn(
             process.argv.shift(),

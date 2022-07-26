@@ -1,5 +1,5 @@
 import { NextFunction, Response } from 'express';
-import { unauthorized, notAcceptable, databaseFailed } from '../../utils/errorRes';
+import { unauthorized, databaseFailed } from '../../utils/errorRes';
 import Request from '../interfaces/request_interfaces';
 const { validationResult } = require('express-validator');
 import AccountModel from '../../models/account';
