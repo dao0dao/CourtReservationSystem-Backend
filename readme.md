@@ -10,6 +10,7 @@ Dla kompletności należy pobrać jeszcze część frontendową.
 
 ## Struktura plików
 Folder projektu <br >
+.<br >
 |<br >
 |- frontend<br >
 |- backend <br >
