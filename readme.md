@@ -9,12 +9,12 @@ Dla kompletności należy pobrać jeszcze część frontendową.
 5. Dla serwera HTTPS wymagany jest certyfikat.
 
 ## Struktura plików
-Folder projektu
-    |
-    |- frontend
-    |- backend 
-        |- app (Dev folder TypeScript)
-        |- server (Folder serwerowy)
+Folder projektu <br >
+|<br >
+|- frontend<br >
+|- backend <br >
+|- app (Dev folder TypeScript)<br >
+|- server (Folder serwerowy)<br >
 
 ### Uruchomienie
 1. Pobranie i wykonanie komendy `npm ci` w terminalu `<project name>/backend`
@@ -37,12 +37,12 @@ For the whole system you should download frontend part
 5. For running HTTPS server you need certificates
 
 ## Project structure
-Project name
-    |
-    |- frontend
-    |- backend 
-        |- app (Dev folder - TypeScript)
-        |- server (Server folder)
+Project name<br >
+|<br >
+|- frontend<br >
+|- backend <br >
+|- app (Dev folder - TypeScript)<br >
+|- server (Server folder)<br >
 
 ### Running serve
 1. Download and run `npm ci` in `<project name>/backend` terminal
