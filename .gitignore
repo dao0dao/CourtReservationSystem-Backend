@@ -2,6 +2,6 @@ dist/
 node_modules/
 server/
 app/varibles.ts
-app/devVaribles.ts
+app/devVariables.ts
 server.cert
 server.key
