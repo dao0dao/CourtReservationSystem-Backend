@@ -18,7 +18,7 @@ https://github.com/dao0dao/CourtReservationSystem-Frontend
 3. W terminalu `<project name>/backend/app` wpisujemy `tsc`, to stworzy nam folder wykonalny.
 4. Dla uruchomienia serwera na protokole `http` w terminalu `<project name>/backend/server` wpisujemy `npm run dev`
 5. Dla uruchomienia serwera na protokole `https` wymagane jest posiadanie certyfikatów. Jeśli takowe posiadamy to dodajemy je do folderu `<project name>/backend` i później należy w terminalu `<project name>/backend/server` wpisać `npm run local`
-6. W encji `coaches` dodajemy wpis `name: Admin`, `login: admin`, `isAdmin: 1`, `password: $2b$13$hgbbVWYfAdEl/mrEhRKHE..JqMfX7jj9O3iSXEKuB1OKojXcr4MFK`, pozwoli to zalogować na konto `admin` z hasłem `admin`.
+6. W encji `coaches` dodajemy wpis `name: Admin`, `login: admin`, `isAdmin: 1`, `password: $2b$13$hgbbVWYfAdEl/mrEhRKHE..JqMfX7jj9O3iSXEKuB1OKojXcr4MFK`, pamiętajmy uzupełnieniu pola 'id', 'createdAt' i 'updatedAt',  pozwoli to zalogować na konto `admin` z hasłem `admin`.
 
 ---------------
 
@@ -42,4 +42,4 @@ https://github.com/dao0dao/CourtReservationSystem-Frontend
 3. In `<project name>/backend/app` terminal type `tsc`, this will create server folder
 4. For running `http` server in `<project name>/backend/server` type `npm run dev`
 5. For running `https` server you need to have certificates, which you should add to `<project name>/backend` destination. Then in `<project name>/backend/server` type `npm run local`
-6. In entity `coaches` add `name: Admin`, `login: admin`, `isAdmin: 1`, `password: $2b$13$hgbbVWYfAdEl/mrEhRKHE..JqMfX7jj9O3iSXEKuB1OKojXcr4MFK`, this allow to login as `admin` with password `admin`
+6. In entity `coaches` add `name: Admin`, `login: admin`, `isAdmin: 1`, `password: $2b$13$hgbbVWYfAdEl/mrEhRKHE..JqMfX7jj9O3iSXEKuB1OKojXcr4MFK`, also remember to fill fields 'id', 'createdAt', 'updatedAt', this allow to login as `admin` with password `admin`
