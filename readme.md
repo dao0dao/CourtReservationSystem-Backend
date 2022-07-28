@@ -1,5 +1,5 @@
 # Jest to backendowa część projektu "Systemu rezerwacyjnego kortu".
-Dla kompletności należy pobrać jeszcze część frontendową.
+Dla kompletności należy pobrać jeszcze część frontendową.<br >
 https://github.com/dao0dao/CourtReservationSystem-Frontend
 
 ## Wymagania
@@ -9,14 +9,8 @@ https://github.com/dao0dao/CourtReservationSystem-Frontend
 4. Lokalna baza SQL
 5. Dla serwera HTTPS wymagany jest certyfikat.
 
-## Struktura plików
-Folder projektu <br >
-.<br >
-|<br >
-|- frontend<br >
-|- backend <br >
-|- app (Dev folder TypeScript)<br >
-|- server (Folder serwerowy)<br >
+## Ustawienie repozytoriów
+1. Frontowe i backendowe repozytoria muszą znajdować się tym samym katalogu.
 
 ### Uruchomienie
 1. Pobranie i wykonanie komendy `npm ci` w terminalu `<project name>/backend`
