@@ -23,7 +23,7 @@ https://github.com/dao0dao/CourtReservationSystem-Frontend
 ---------------
 
 # It is a backend part of project: 'Tennis court reservation system'
-For the whole system you should download frontend part
+For the whole system you should download frontend part <br >
 https://github.com/dao0dao/CourtReservationSystem-Frontend
 
 ## Requirements
@@ -33,13 +33,8 @@ https://github.com/dao0dao/CourtReservationSystem-Frontend
 4. Local base SQL
 5. For running HTTPS server you need certificates
 
-## Project structure
-Project name<br >
-|<br >
-|- frontend<br >
-|- backend <br >
-|- app (Dev folder - TypeScript)<br >
-|- server (Server folder)<br >
+## Repositories configurations
+1. Frontend and backend repositories must be in the same folder.
 
 ### Running serve
 1. Download and run `npm ci` in `<project name>/backend` terminal
